@@ -16,6 +16,8 @@ from sklearn.ensemble import RandomForestClassifier
 from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
 
+from xgboost import XGBClassifier
+
 from .models.network import SimpleNN
 
 
@@ -32,6 +34,8 @@ def _make_models() -> dict:
                               task_type='GPU' if use_gpu else 'CPU', verbose=0),
         'LightGBM':       LGBMClassifier(
                               device='gpu' if use_gpu else 'cpu'),
+        'XGBoost':        XGBClassifier(
+                              tree_method='gpu_hist' if use_gpu else 'hist')
     }
 
 
@@ -120,6 +124,7 @@ def train_voting(
         ('rf',       models['Random Forest']),
         ('catboost', models['CatBoost']),
         ('lgbm',     models['LightGBM']),
+        ('xgboost',  models['XGBoost']),
     ]
     voting_clf = _Voting(estimators=estimators, voting='hard')
     voting_clf.fit(X_train, y_train)
