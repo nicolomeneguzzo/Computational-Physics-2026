@@ -15,6 +15,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
+from sklearn.model_selection import RandomizedSearchCV  #aggiunta enrica 
+from .models.trees import SimpleRandomForest, SimpleExtraTrees   #aggiunta enrica 
+
 
 from .models.network import SimpleNN
 
@@ -198,3 +201,27 @@ def train_neural(
 
     gc.collect()
     return model
+
+####### parte aggiunta da enrica ##########
+
+
+def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
+    """RF e ET con hyperparameter tuning via RandomizedSearchCV."""
+    param_dist = {
+        'n_estimators':      [100, 200, 300, 500],
+        'max_depth':         [10, 15, 20, None],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf':  [1, 2, 4],
+    }
+    models = {}
+    for name, base in [('Random Forest', SimpleRandomForest()),
+                       ('Extra Trees',   SimpleExtraTrees())]:
+        tuner = RandomizedSearchCV(base, param_dist, n_iter=n_iter,
+                                   cv=cv, scoring='accuracy', n_jobs=-1)
+        tuner.fit(X_train, y_train)
+        models[name] = tuner.best_estimator_
+        print(f"{name} best params: {tuner.best_params_}")
+        for X, y, split in [(X_train, y_train, 'Train'), (X_val, y_val, 'Val')]:
+            m = compute_metrics(y, models[name].predict(X), split, name)
+            print(f"  [{split}] Acc={m['accuracy']:.2f}%  F1={m['f1']:.4f}")
+    return models

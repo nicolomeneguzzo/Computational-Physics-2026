@@ -23,6 +23,7 @@ from .trainer import (  # noqa: F401
     train_traditional,
     train_voting,
     train_neural,
+    train_trees_with_tuning,  #aggiunta enrica
 )
 from .inference.predictor import (  # noqa: F401
     evaluate_test_set,
@@ -36,6 +37,7 @@ from .visualization import (  # noqa: F401
 )
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
+from .models.trees import SimpleRandomForest, SimpleExtraTrees
 
 __all__ = [
     # data
@@ -49,5 +51,5 @@ __all__ = [
     # utils
     'print_metrics',
     # models
-    'SimpleNN',
+    'SimpleNN','train_trees_with_tuning' #aggiunta enrica 
 ]
