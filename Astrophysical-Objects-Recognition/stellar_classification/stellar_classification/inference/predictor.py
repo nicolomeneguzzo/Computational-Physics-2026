@@ -61,7 +61,7 @@ def compute_permutation_importance(
 ) -> pd.DataFrame:
     """Compute permutation importance and return sorted DataFrame."""
     result = permutation_importance(
-        model, X_test, y_test, n_repeats=n_repeats, random_state=random_state, n_jobs=-1 
+        model, X_test, y_test, n_repeats=n_repeats, random_state=random_state, n_jobs=2 
     ) #qui ho cambiato n_jobs da - 1 a 1 
     imp = pd.Series(result.importances_mean, index=feature_names).sort_values(ascending=False)
     return imp
