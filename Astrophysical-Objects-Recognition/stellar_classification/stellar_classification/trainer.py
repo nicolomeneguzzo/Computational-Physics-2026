@@ -90,12 +90,18 @@ def train_traditional(
 
     return models
 
+    # Custom subclass that fixes prediction shape for hard voting
+class _Voting(VotingClassifier):
+    def _predict(self, X):
+        preds = [est.predict(X).ravel() for est in self.estimators_]
+        return np.asarray(preds).T
+
 
 def train_voting(
     X_train: np.ndarray, y_train: np.ndarray,
     X_val:   np.ndarray, y_val:   np.ndarray,
     models:  dict | None = None,
-) -> VotingClassifier:
+) -> '_Voting':
     """Build and fit a hard VotingClassifier over all traditional models.
 
     Parameters
@@ -108,11 +114,6 @@ def train_voting(
     if models is None:
         models = train_traditional(X_train, y_train, X_val, y_val)
 
-    # Custom subclass that fixes prediction shape for hard voting
-    class _Voting(VotingClassifier):
-        def _predict(self, X):
-            preds = [est.predict(X).ravel() for est in self.estimators_]
-            return np.asarray(preds).T
 
     estimators = [
         ('svc',      models['Linear SVC']),

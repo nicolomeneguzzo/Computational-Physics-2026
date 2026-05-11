@@ -37,6 +37,8 @@ from .visualization import (  # noqa: F401
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
 
+from .stacking import train_stacking
+
 __all__ = [
     # data
     'remove_outliers', 'prepare_splits', 'to_dataloaders',

@@ -56,3 +56,30 @@ nn_model = train_neural(train_loader, val_loader, input_size=X_train.shape[1], n
 ## Training Config
 
 See `configs/training_config.yaml` for hyperparameters.
+
+
+### work
+optimized compute_permutation:importance using batchs methode
+
+#saving models
+Saved trained models for comparison
+to load the models:
+
+for pyTorch NN use:
+import torch
+from stellar_classification.models.network import SimpleNN
+
+nn_model = SimpleNN(input_size, num_classes)  # ricostruisce la struttura
+nn_model.load_state_dict(torch.load('notebooks/trained_models/nn_model.pth'))
+nn_model.eval()  # mette il modello in modalità inferenz
+
+for Voting Classifier use:
+import joblib
+from stellar_classification.trainer import _Voting  # importante! serve per deserializzare
+
+voting_clf = joblib.load('notebooks/trained_models/model_name.pkl')
+
+
+#stacking
+first problem: linearSVC has no native predict_proba
+

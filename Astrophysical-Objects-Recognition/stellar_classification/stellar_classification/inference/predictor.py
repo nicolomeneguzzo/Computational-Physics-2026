@@ -98,8 +98,8 @@ def compute_permutation_importance(
             n_jobs=n_jobs  
         )
         all_importances.append(result.importances_mean)
-
     #media tra i batch
+    print(all_importances)
     mean_imp = np.mean(all_importances, axis=0)
 
     return pd.Series(mean_imp, index=feature_names).sort_values(ascending=False)
