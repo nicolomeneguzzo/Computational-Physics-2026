@@ -41,7 +41,7 @@ def train_stacking(
     if models is None:
         models = train_traditional(X_train, y_train, X_val, y_val)
 
-    calibrated_scv = CalibratedClassifierCV(models['Linear SVC'], cv='prefit')
+    calibrated_scv = CalibratedClassifierCV(models['Linear SVC'], cv=None)
     estimators = [
         ('svc',      calibrated_scv),
         ('dt',       models['Decision Tree']),
@@ -49,7 +49,7 @@ def train_stacking(
         ('catboost', models['CatBoost']),
         ('lgbm',     models['LightGBM']),
     ]
-    stacking_clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression(multi_class='multinomial'), stack_method='predict_proba', n_jobs=n_jobs)
+    stacking_clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression(), stack_method='predict_proba', n_jobs=n_jobs)
     #training
     print('starting training...')
     stacking_clf.fit(X_train, y_train)

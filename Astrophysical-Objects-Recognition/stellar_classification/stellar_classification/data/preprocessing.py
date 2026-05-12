@@ -77,7 +77,7 @@ def prepare_splits(
     df[target_col] = le.fit_transform(df[target_col])
 
     # ── 2. Drop metadata columns ──────────────────────────────────────────────
-    df.drop(columns=METADATA_COLUMNS, inplace=True, errors='ignore')
+    df.drop(columns=METADATA_COLUMNS+Z, inplace=True, errors='ignore')
     
     # ── 3. (Optional) remove outliers ─────────────────────────────────────────
     if apply_outlier_removal:

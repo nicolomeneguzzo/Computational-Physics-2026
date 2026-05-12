@@ -58,28 +58,127 @@ nn_model = train_neural(train_loader, val_loader, input_size=X_train.shape[1], n
 See `configs/training_config.yaml` for hyperparameters.
 
 
-### work
+## work
 optimized compute_permutation:importance using batchs methode
 
-#saving models
-Saved trained models for comparison
-to load the models:
+---
 
-for pyTorch NN use:
-import torch
-from stellar_classification.models.network import SimpleNN
-
-nn_model = SimpleNN(input_size, num_classes)  # ricostruisce la struttura
-nn_model.load_state_dict(torch.load('notebooks/trained_models/nn_model.pth'))
-nn_model.eval()  # mette il modello in modalità inferenz
-
-for Voting Classifier use:
-import joblib
-from stellar_classification.trainer import _Voting  # importante! serve per deserializzare
-
-voting_clf = joblib.load('notebooks/trained_models/model_name.pkl')
-
-
-#stacking
+#Stacking
 first problem: linearSVC has no native predict_proba
 
+```calibrated_scv = CalibratedClassifierCV(models['Linear SVC'], cv=None)```
+
+---
+
+##Result
+
+#Con redshift
+*Voting Classifier*
+Stacking Classifier trained.
+  [Training] Acc=97.85%  P=0.98  R=0.98  F1=0.98
+  [Validation] Acc=96.88%  P=0.94  R=0.96  F1=0.95
+saved file:Astrophysical-Objects-Recognition/notebooks/trained_models/voting_clf_redshift.pkl
+
+*Stacking Classifier*
+Stacking Classifier trained.
+  [Training] Acc=100.00%  P=1.00  R=1.00  F1=1.00
+  [Validation] Acc=97.43%  P=0.95  R=0.96  F1=0.96  
+saved file: Astrophysical-Objects-Recognition/notebooks/trained_models/stacking_clf_redshift.pkl
+
+**comparison**
+
+Voting Classifier:
+  Accuracy  : 97.28%
+  Precision: 0.9483
+  Recall   : 0.9616
+  F1       : 0.9548
+  Confusion Matrix:
+[[11508   269    47]
+ [  175  1818     1]
+ [    1     0  4301]]
+
+Stacking Classifier:
+  Accuracy  : 97.51%
+  Precision: 0.9570
+  Recall   : 0.9567
+  F1       : 0.9569
+  Confusion Matrix:
+[[11593   208    23]
+ [  219  1775     0]
+ [    2     0  4300]]
+
+Neural Network:
+  Accuracy  : 96.05%
+  Precision: 0.9277
+  Recall   : 0.9564
+  F1       : 0.9413
+  Confusion Matrix:
+[[11289   345   190]
+ [  162  1831     1]
+ [   17     0  4285]]
+
+#No redshift
+
+
+Voting Classifier:
+  Accuracy  : 88.25%
+  Precision: 0.8452
+  Recall   : 0.8533
+  F1       : 0.8484
+  Confusion Matrix:
+[[11005   425   401]
+ [  258  3208   320]
+ [  390   546  3366]]
+
+Stacking Classifier:
+  Accuracy  : 88.18%
+  Precision: 0.8453
+  Recall   : 0.8479
+  F1       : 0.8466
+  Confusion Matrix:
+[[11055   380   396]
+ [  315  3043   428]
+ [  401   435  3466]]
+
+Neural Network:
+  Accuracy  : 84.01%
+  Precision: 0.7933
+  Recall   : 0.8313
+  F1       : 0.8091
+  Confusion Matrix:
+[[10109   657  1065]
+ [  211  3141   434]
+ [  315   503  3484]]
+
+
+#No redshift, index: u-g, g-r, r-i, i-z
+
+Voting Classifier:
+  Accuracy  : 90.78%
+  Precision: 0.8802
+  Recall   : 0.8849
+  F1       : 0.8818
+  Confusion Matrix:
+[[10194   364   223]
+ [  218  3114   216]
+ [  270   392  3266]]
+
+Stacking Classifier:
+  Accuracy  : 90.30%
+  Precision: 0.8745
+  Recall   : 0.8754
+  F1       : 0.8748
+  Confusion Matrix:
+[[10213   326   242]
+ [  253  3006   289]
+ [  305   356  3267]]
+
+Neural Network:
+  Accuracy  : 88.59%
+  Precision: 0.8522
+  Recall   : 0.8596
+  F1       : 0.8558
+  Confusion Matrix:
+[[10009   359   413]
+ [  248  2970   330]
+ [  363   370  3195]]
