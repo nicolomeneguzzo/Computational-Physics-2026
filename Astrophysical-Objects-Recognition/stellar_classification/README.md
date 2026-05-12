@@ -70,115 +70,107 @@ first problem: linearSVC has no native predict_proba
 
 ---
 
-##Result
+## Results
 
-#Con redshift
-*Voting Classifier*
-Stacking Classifier trained.
-  [Training] Acc=97.85%  P=0.98  R=0.98  F1=0.98
-  [Validation] Acc=96.88%  P=0.94  R=0.96  F1=0.95
-saved file:Astrophysical-Objects-Recognition/notebooks/trained_models/voting_clf_redshift.pkl
+### With Redshift
 
-*Stacking Classifier*
-Stacking Classifier trained.
-  [Training] Acc=100.00%  P=1.00  R=1.00  F1=1.00
-  [Validation] Acc=97.43%  P=0.95  R=0.96  F1=0.96  
-saved file: Astrophysical-Objects-Recognition/notebooks/trained_models/stacking_clf_redshift.pkl
+#### Metrics
 
-**comparison**
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Voting Classifier | 97.28% | 0.9483 | 0.9616 | 0.9548 |
+| Stacking Classifier | 97.51% | 0.9570 | 0.9567 | 0.9569 |
+| Neural Network | 96.05% | 0.9277 | 0.9564 | 0.9413 |
 
-Voting Classifier:
-  Accuracy  : 97.28%
-  Precision: 0.9483
-  Recall   : 0.9616
-  F1       : 0.9548
-  Confusion Matrix:
-[[11508   269    47]
- [  175  1818     1]
- [    1     0  4301]]
+#### Confusion Matrices
 
-Stacking Classifier:
-  Accuracy  : 97.51%
-  Precision: 0.9570
-  Recall   : 0.9567
-  F1       : 0.9569
-  Confusion Matrix:
-[[11593   208    23]
- [  219  1775     0]
- [    2     0  4300]]
+**Voting Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11508 | 269 | 47 |
+| **STAR** | 175 | 1818 | 1 |
+| **QUASAR** | 1 | 0 | 4301 |
 
-Neural Network:
-  Accuracy  : 96.05%
-  Precision: 0.9277
-  Recall   : 0.9564
-  F1       : 0.9413
-  Confusion Matrix:
-[[11289   345   190]
- [  162  1831     1]
- [   17     0  4285]]
+**Stacking Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11593 | 208 | 23 |
+| **STAR** | 219 | 1775 | 0 |
+| **QUASAR** | 2 | 0 | 4300 |
 
-#No redshift
+**Neural Network**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11289 | 345 | 190 |
+| **STAR** | 162 | 1831 | 1 |
+| **QUASAR** | 17 | 0 | 4285 |
 
+---
 
-Voting Classifier:
-  Accuracy  : 88.25%
-  Precision: 0.8452
-  Recall   : 0.8533
-  F1       : 0.8484
-  Confusion Matrix:
-[[11005   425   401]
- [  258  3208   320]
- [  390   546  3366]]
+### Without Redshift
 
-Stacking Classifier:
-  Accuracy  : 88.18%
-  Precision: 0.8453
-  Recall   : 0.8479
-  F1       : 0.8466
-  Confusion Matrix:
-[[11055   380   396]
- [  315  3043   428]
- [  401   435  3466]]
+#### Metrics
 
-Neural Network:
-  Accuracy  : 84.01%
-  Precision: 0.7933
-  Recall   : 0.8313
-  F1       : 0.8091
-  Confusion Matrix:
-[[10109   657  1065]
- [  211  3141   434]
- [  315   503  3484]]
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Voting Classifier | 88.25% | 0.8452 | 0.8533 | 0.8484 |
+| Stacking Classifier | 88.18% | 0.8453 | 0.8479 | 0.8466 |
+| Neural Network | 84.01% | 0.7933 | 0.8313 | 0.8091 |
 
+#### Confusion Matrices
 
-#No redshift, index: u-g, g-r, r-i, i-z
+**Voting Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11005 | 425 | 401 |
+| **STAR** | 258 | 3208 | 320 |
+| **QUASAR** | 390 | 546 | 3366 |
 
-Voting Classifier:
-  Accuracy  : 90.78%
-  Precision: 0.8802
-  Recall   : 0.8849
-  F1       : 0.8818
-  Confusion Matrix:
-[[10194   364   223]
- [  218  3114   216]
- [  270   392  3266]]
+**Stacking Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11055 | 380 | 396 |
+| **STAR** | 315 | 3043 | 428 |
+| **QUASAR** | 401 | 435 | 3466 |
 
-Stacking Classifier:
-  Accuracy  : 90.30%
-  Precision: 0.8745
-  Recall   : 0.8754
-  F1       : 0.8748
-  Confusion Matrix:
-[[10213   326   242]
- [  253  3006   289]
- [  305   356  3267]]
+**Neural Network**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 10109 | 657 | 1065 |
+| **STAR** | 211 | 3141 | 434 |
+| **QUASAR** | 315 | 503 | 3484 |
 
-Neural Network:
-  Accuracy  : 88.59%
-  Precision: 0.8522
-  Recall   : 0.8596
-  F1       : 0.8558
-  Confusion Matrix:
-[[10009   359   413]
- [  248  2970   330]
- [  363   370  3195]]
+---
+
+### Without Redshift, Color Indices: u-g, g-r, r-i, i-z
+
+#### Metrics
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Voting Classifier | 90.78% | 0.8802 | 0.8849 | 0.8818 |
+| Stacking Classifier | 90.30% | 0.8745 | 0.8754 | 0.8748 |
+| Neural Network | 88.59% | 0.8522 | 0.8596 | 0.8558 |
+
+#### Confusion Matrices
+
+**Voting Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 10194 | 364 | 223 |
+| **STAR** | 218 | 3114 | 216 |
+| **QUASAR** | 270 | 392 | 3266 |
+
+**Stacking Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 10213 | 326 | 242 |
+| **STAR** | 253 | 3006 | 289 |
+| **QUASAR** | 305 | 356 | 3267 |
+
+**Neural Network**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 10009 | 359 | 413 |
+| **STAR** | 248 | 2970 | 330 |
+| **QUASAR** | 363 | 370 | 3195 |
