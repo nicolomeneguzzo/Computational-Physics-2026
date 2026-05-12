@@ -11,3 +11,6 @@ memory/
 CLAUDE.md
 data/
 */notebooks/catboost_info
+*.pk1
+*.pth
+trained_models/
