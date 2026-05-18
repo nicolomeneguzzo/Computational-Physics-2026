@@ -51,11 +51,12 @@ def plot_confusion_matrix(cm, class_names=None, title: str = 'Confusion Matrix')
     plt.tight_layout()
     plt.show()
 
-
+#funzione modificata da enrica 
 def plot_permutation_importance(
     imp: pd.Series,
     top_n: int = 10,
     title: str = 'Permutation Feature Importance',
+    ax=None, 
 ) -> None:
     """Horizontal bar chart of permutation importances.
 
@@ -70,10 +71,15 @@ def plot_permutation_importance(
         Plot title.
     """
     top = imp.head(top_n)
-    fig, ax = plt.subplots(figsize=(10, 6))
+    if ax is None:                    
+        fig, ax = plt.subplots(figsize=(10, 6))
+        standalone = True
+    else:
+        standalone = False   
     ax.barh(top.index, top.values)
     ax.set_xlabel('Mean Importance')
     ax.set_title(f'{title} (Top {top_n})')
     ax.invert_yaxis()
-    plt.tight_layout()
-    plt.show()
+    if standalone:
+        plt.tight_layout()
+        plt.show()

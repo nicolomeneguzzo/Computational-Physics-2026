@@ -208,12 +208,11 @@ def train_neural(
 def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
     """RF e ET con hyperparameter tuning via RandomizedSearchCV."""
     param_dist_rf= {
-        'n_estimators':      [50, 100, 150, 200, 300, 500],
+        'n_estimators':      [50, 100, 150, 200, 500],
         'max_depth':         [5, 10, 15, 20, None],
         'min_samples_split': [2, 5, 10, 20],
         'min_samples_leaf':  [1, 2, 4],
         'max_features':      ['log2', 0.5, 'sqrt', None]
-        'max_samples':       [0.7, 0.8, 0.9, None]
     
     }
     param_dist_et = {
@@ -221,7 +220,7 @@ def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
         'max_depth':         [5, 10, 15, 20, None],
         'min_samples_split': [2, 5, 10, 20],
         'min_samples_leaf':  [1, 2, 4],
-        'max_features':      ['sqrt', 'log2', 0.5],
+        'max_features':      ['sqrt', 'log2', 0.5]
     }
     models = {}
     for name, base, param_dist in [('Random Forest', SimpleRandomForest(), param_dist_rf),
