@@ -290,8 +290,9 @@ def evaluate_single_model(model, X_train, y_train, X_val, y_val, model_name="Mod
 
     for m in (train_metrics, val_metrics):
         print(
-            f"[{m['dataset']}] Acc={m['accuracy']:.2f}% "
-            f"P={m['precision']:.2f} R={m['recall']:.2f} F1={m['f1']:.2f}"
+            f"[{m['dataset']}] Acc={m['accuracy']:.4f}% "
+            f"P={m['precision']:.4f} R={m['recall']:.4f} F1={m['f1']:.4f}"
+            f"\nConfusion Matrix:\n{m['confusion_matrix']}\n"
         )
 
     return train_metrics, val_metrics
