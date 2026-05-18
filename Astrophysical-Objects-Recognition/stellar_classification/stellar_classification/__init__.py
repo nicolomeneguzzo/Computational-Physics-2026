@@ -21,8 +21,10 @@ from .data.preprocessing import (  # noqa: F401
 from .trainer import (  # noqa: F401
     compute_metrics,
     train_traditional,
+    tune_model,
     train_voting,
     train_neural,
+    evaluate_single_model,
 )
 from .inference.predictor import (  # noqa: F401
     evaluate_test_set,

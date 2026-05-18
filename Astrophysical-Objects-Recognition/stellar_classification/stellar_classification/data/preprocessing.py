@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 # Metadata columns that carry no predictive signal
-METADATA_COLUMNS = ['run_ID', 'rerun_ID', 'cam_col', 'field_ID', 'spec_obj_ID', 'fiber_ID', 'obj_ID']
+METADATA_COLUMNS = ['run_ID', 'rerun_ID', 'cam_col', 'field_ID', 'spec_obj_ID', 'fiber_ID', 'obj_ID','redshift']
 
 
 def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:

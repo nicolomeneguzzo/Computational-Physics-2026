@@ -95,6 +95,77 @@ def train_traditional(
     return models
 
 
+from sklearn.model_selection import RandomizedSearchCV
+
+
+def tune_model(
+    model,
+    param_grid: dict,
+    X_train,
+    y_train,
+    *,
+    scoring: str = "f1_macro",
+    cv: int = 3,
+    n_iter: int = 10,
+    n_jobs: int = -1,
+    random_state: int = 42,
+    verbose: int = 1,
+):
+    """
+    Generic hyperparameter tuning function.
+
+    Parameters
+    ----------
+    model : estimator
+        Any sklearn-compatible model.
+    param_grid : dict
+        Hyperparameter search space.
+    X_train, y_train :
+        Training data.
+    scoring : str
+        Optimization metric.
+    cv : int
+        Cross-validation folds.
+    n_iter : int
+        Number of sampled parameter combinations.
+    n_jobs : int
+        Parallel jobs.
+    random_state : int
+        Random seed.
+    verbose : int
+        Verbosity level.
+
+    Returns
+    -------
+    best_model :
+        Best fitted estimator.
+    best_params : dict
+        Best hyperparameters.
+    best_score : float
+        Best cross-validation score.
+    """
+
+    search = RandomizedSearchCV(
+        estimator=model,
+        param_distributions=param_grid,
+        n_iter=n_iter,
+        scoring=scoring,
+        cv=cv,
+        verbose=verbose,
+        n_jobs=n_jobs,
+        random_state=random_state,
+    )
+
+    search.fit(X_train, y_train)
+
+    return (
+        search.best_estimator_,
+        search.best_params_,
+        search.best_score_,
+    )
+
+
+
 def train_voting(
     X_train: np.ndarray, y_train: np.ndarray,
     X_val:   np.ndarray, y_val:   np.ndarray,
@@ -203,3 +274,24 @@ def train_neural(
 
     gc.collect()
     return model
+
+
+
+def evaluate_single_model(model, X_train, y_train, X_val, y_val, model_name="Model"):
+    """
+    Train (already fitted model assumed) + compute all metrics on train/val.
+    """
+
+    train_pred = model.predict(X_train)
+    val_pred   = model.predict(X_val)
+
+    train_metrics = compute_metrics(y_train, train_pred, "Training", model_name)
+    val_metrics   = compute_metrics(y_val, val_pred, "Validation", model_name)
+
+    for m in (train_metrics, val_metrics):
+        print(
+            f"[{m['dataset']}] Acc={m['accuracy']:.2f}% "
+            f"P={m['precision']:.2f} R={m['recall']:.2f} F1={m['f1']:.2f}"
+        )
+
+    return train_metrics, val_metrics
