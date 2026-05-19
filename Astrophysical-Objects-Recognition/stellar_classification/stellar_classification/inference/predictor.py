@@ -81,3 +81,48 @@ def compute_shap(
     explainer = shap.KernelExplainer(predict_fn, X_train_background[:background_size])
     shap_values = explainer.shap_values(X_test_subset)
     return explainer, shap_values
+
+
+def shap_summary_tree_model(model, X, feature_names, class_names=None, show=True):
+    """
+    Generate SHAP summary plots for tree-based multi-class models.
+
+    Parameters
+    ----------
+    model : fitted tree-based model (e.g., XGBoost, LightGBM)
+    X : array-like or pd.DataFrame
+        Input features (test set)
+    feature_names : list
+        Names of features
+    class_names : list, optional
+        Class labels (from LabelEncoder)
+    show : bool, default=True
+        Whether to display plots
+
+    Returns
+    -------
+    shap_values : computed SHAP values
+    """
+
+    import pandas as pd
+    import shap
+
+    # Ensure DataFrame format
+    X_df = pd.DataFrame(X, columns=feature_names)
+
+    # Create explainer
+    explainer = shap.TreeExplainer(model)
+
+    # Compute SHAP values
+    shap_values = explainer.shap_values(X_df)
+
+    # Class names fallback
+    if class_names is None:
+        class_names = [f"class_{i}" for i in range(len(shap_values[0]))]
+
+    # Plot per class
+    for i, cls in enumerate(class_names):
+        print(f"\nSHAP summary for class: {cls}")
+        shap.summary_plot(shap_values[:, :, i], X_df, show=show)
+
+    return shap_values
