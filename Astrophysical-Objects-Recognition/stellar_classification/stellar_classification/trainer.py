@@ -109,7 +109,7 @@ def tune_model(
     n_iter: int = 10,
     n_jobs: int = -1,
     random_state: int = 42,
-    verbose: int = 1,
+    verbose: int = 0,
 ):
     """
     Generic hyperparameter tuning function.
