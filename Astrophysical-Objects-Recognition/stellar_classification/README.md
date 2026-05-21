@@ -174,3 +174,43 @@ first problem: linearSVC has no native predict_proba
 | **GALAXY** | 10009 | 359 | 413 |
 | **STAR** | 248 | 2970 | 330 |
 | **QUASAR** | 363 | 370 | 3195 |
+
+
+### No SMOT, with redshift
+
+#### Training & Validation Metrics
+
+| Model | Train Acc | Train F1 | Val Acc | Val F1 |
+|---|---|---|---|---|
+| Voting Classifier | 99.20% | 0.99 | 97.59% | 0.96 |
+| Stacking Classifier | 99.60% | 0.99 | 97.67% | 0.96 |
+
+#### Test Metrics
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Voting Classifier | 97.73% | 0.9702 | 0.9507 | 0.9599 |
+| Stacking Classifier | 97.75% | 0.9707 | 0.9505 | 0.9601 |
+| Neural Network | 96.58% | 0.9594 | 0.9341 | 0.9454 |
+#### Confusion Matrices
+
+**Voting Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11686 | 110 | 28 |
+| **STAR** | 271 | 1723 | 0 |
+| **QUASAR** | 2 | 0 | 4300 |
+
+**Stacking Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11693 | 110 | 21 |
+| **STAR** | 272 | 1722 | 0 |
+| **QUASAR** | 4 | 0 | 4298 |
+
+**Neural Network**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11569 | 97 | 158 |
+| **STAR** | 338 | 1654 | 2 |
+| **QUASAR** | 24 | 0 | 4278 |

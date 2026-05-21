@@ -22,6 +22,26 @@ from .models.network import SimpleNN
 
 
 
+def _make_stacking_models() -> dict:
+    return {
+        'Linear SVC':    LinearSVC(),
+        'Decision Tree': DecisionTreeClassifier(),
+        'Random Forest': RandomForestClassifier(),
+        'CatBoost':      CatBoostClassifier(task_type='CPU', verbose=0),
+        'LightGBM':      LGBMClassifier(device='cpu'),
+    }
+
+def stack_training_models(
+    X_train: np.ndarray, y_train: np.ndarray,
+) -> dict:
+    models = _make_stacking_models()
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        print(f"{name} trained.")
+    return models 
+    
+
+
 def train_stacking(
     X_train: np.ndarray, y_train: np.ndarray,
     X_val:   np.ndarray, y_val:   np.ndarray,
@@ -39,7 +59,7 @@ def train_stacking(
     """
 
     if models is None:
-        models = train_traditional(X_train, y_train, X_val, y_val)
+        models = stack_training_models(X_train, y_train)
 
     calibrated_scv = CalibratedClassifierCV(models['Linear SVC'], cv=None)
     estimators = [
