@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+import os
 
 def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
     """Bar chart of class frequencies.
@@ -26,7 +26,7 @@ def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
     plt.show()
 
 
-def plot_confusion_matrix(cm, class_names=None, title: str = 'Confusion Matrix') -> None:
+def plot_confusion_matrix(cm, class_names=None, title: str = 'Confusion Matrix', save_path: str = None) -> None:
     """Heatmap of a confusion matrix.
 
     Parameters
@@ -49,6 +49,12 @@ def plot_confusion_matrix(cm, class_names=None, title: str = 'Confusion Matrix')
     heatmap.set_xlabel('Predicted')
     heatmap.set_ylabel('Actual')
     plt.tight_layout()
+     
+    if save_path is not None:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        print(f"Saved: {save_path}")
+         
     plt.show()
 
 
@@ -56,6 +62,7 @@ def plot_permutation_importance(
     imp: pd.Series,
     top_n: int = 10,
     title: str = 'Permutation Feature Importance',
+    save_path: str = None
 ) -> None:
     """Horizontal bar chart of permutation importances.
 
@@ -76,4 +83,11 @@ def plot_permutation_importance(
     ax.set_title(f'{title} (Top {top_n})')
     ax.invert_yaxis()
     plt.tight_layout()
+
+    if save_path is not None:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        print(f"Saved: {save_path}")
+        
     plt.show()
+    plt.close(fig)

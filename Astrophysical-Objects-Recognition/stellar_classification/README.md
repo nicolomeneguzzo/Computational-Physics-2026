@@ -214,3 +214,55 @@ first problem: linearSVC has no native predict_proba
 | **GALAXY** | 11569 | 97 | 158 |
 | **STAR** | 338 | 1654 | 2 |
 | **QUASAR** | 24 | 0 | 4278 |
+
+
+### No Redshift, No SMOTE
+
+#### Base Learners
+
+| Model | Train Acc | Train F1 | Val Acc | Val F1 |
+|---|---|---|---|---|
+| Linear SVC | 75.51% | 0.65 | 75.69% | 0.65 |
+| Decision Tree | 100.00% | 1.00 | 83.29% | 0.79 |
+| Random Forest | 100.00% | 1.00 | 88.76% | 0.85 |
+| CatBoost | 92.00% | 0.90 | 88.75% | 0.85 |
+| LightGBM | 89.96% | 0.87 | 88.52% | 0.85 |
+
+#### Training & Validation Metrics
+
+| Model | Train Acc | Train F1 | Val Acc | Val F1 |
+|---|---|---|---|---|
+| Voting Classifier | 94.38% | 0.93 | 88.80% | 0.85 |
+| Stacking Classifier | 97.47% | 0.97 | 89.24% | 0.86 |
+| Neural Network | - | - | 86.56% | - |
+
+#### Test Metrics
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Voting Classifier | 88.63% | 0.8605 | 0.8419 | 0.8492 |
+| Stacking Classifier | 89.01% | 0.8601 | 0.8502 | 0.8548 |
+| Neural Network | 86.36% | 0.8317 | 0.8140 | 0.8212 |
+
+#### Confusion Matrices
+
+**Voting Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11341 | 304 | 186 |
+| **STAR** | 351 | 3140 | 295 |
+| **QUASAR** | 599 | 529 | 3174 |
+
+**Stacking Classifier**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11279 | 287 | 265 |
+| **STAR** | 329 | 3080 | 377 |
+| **QUASAR** | 484 | 447 | 3371 |
+
+**Neural Network**
+| | GALAXY | STAR | QUASAR |
+|---|---|---|---|
+| **GALAXY** | 11169 | 335 | 327 |
+| **STAR** | 425 | 3013 | 348 |
+| **QUASAR** | 721 | 561 | 3020 |
