@@ -83,3 +83,61 @@ def plot_permutation_importance(
     if standalone:
         plt.tight_layout()
         plt.show()
+
+
+#feature ablation ( enrica ) 
+
+def plot_feature_ablation(
+    model,
+    X_train: np.ndarray,
+    X_test: np.ndarray,
+    y_train: np.ndarray,
+    y_test: np.ndarray,
+    feature_names: list,
+    title: str = 'Feature Ablation',
+    ax=None,
+) -> None:
+    """Plot accuracy vs number of features used, from most to least important.
+    
+    Parameters
+    ----------
+    model : fitted estimator
+        Trained sklearn model with feature_importances_ attribute.
+    X_train, X_test : np.ndarray
+        Training and test arrays.
+    y_train, y_test : np.ndarray
+        Training and test labels.
+    feature_names : list
+        Feature names corresponding to columns of X.
+    title : str
+        Plot title.
+    ax : matplotlib Axes, optional
+        If provided, draws on existing axes. Otherwise creates a new figure.
+    """
+    from sklearn.metrics import accuracy_score
+
+    imp_order = pd.Series(model.feature_importances_,
+                          index=feature_names).sort_values(ascending=False).index.tolist()
+    accuracies = []
+    for i in range(1, len(imp_order) + 1):
+        selected_idx = [list(feature_names).index(f) for f in imp_order[:i]]
+        m = model.__class__(**model.get_params())
+        m.fit(X_train[:, selected_idx], y_train)
+        acc = accuracy_score(y_test, m.predict(X_test[:, selected_idx])) * 100
+        accuracies.append(acc)
+
+    standalone = ax is None
+    if standalone:
+        fig, ax = plt.subplots(figsize=(8, 5))
+
+    ax.plot(range(1, len(imp_order) + 1), accuracies, marker='o')
+    ax.axhline(y=accuracies[-1], color='r', linestyle='--',
+               label=f'Full accuracy: {accuracies[-1]:.1f}%')
+    ax.set_xlabel('N° features used (most to least important)')
+    ax.set_ylabel('Test Accuracy (%)')
+    ax.set_title(title)
+    ax.legend()
+
+    if standalone:
+        plt.tight_layout()
+        plt.show()

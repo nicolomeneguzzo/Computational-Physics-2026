@@ -34,6 +34,7 @@ from .visualization import (  # noqa: F401
     plot_class_distribution,
     plot_confusion_matrix,
     plot_permutation_importance,
+    plot_feature_ablation,
 )
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
@@ -47,7 +48,7 @@ __all__ = [
     # inference
     'evaluate_test_set', 'evaluate_neural', 'compute_permutation_importance',
     # visualization
-    'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance',
+    'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance', 'plot_feature_ablation', #--> aggiunta enrica 
     # utils
     'print_metrics',
     # models

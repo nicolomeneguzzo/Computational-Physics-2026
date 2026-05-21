@@ -226,7 +226,7 @@ def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
     for name, base, param_dist in [('Random Forest', SimpleRandomForest(), param_dist_rf),
                        ('Extra Trees',   SimpleExtraTrees(), param_dist_et)]:
         tuner = RandomizedSearchCV(base, param_dist, n_iter=n_iter,
-                                   cv=cv, scoring='accuracy', n_jobs=-1)
+                                   cv=cv, scoring='accuracy', n_jobs=2)
         tuner.fit(X_train, y_train)
         models[name] = tuner.best_estimator_
         print(f"{name} best params: {tuner.best_params_}")
