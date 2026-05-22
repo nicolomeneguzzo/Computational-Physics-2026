@@ -126,3 +126,93 @@ def shap_summary_tree_model(model, X, feature_names, class_names=None, show=True
         shap.summary_plot(shap_values[:, :, i], X_df, show=show)
 
     return shap_values
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def predict_with_confidence(
+    model,
+    X_test,
+    X_plot=None,
+    feature_x="g_r",
+    feature_y="r_i",
+    threshold=0.9,
+    uncertain_label=-1,
+    plot=True,
+    cmap="viridis",
+):
+    """
+    Predict classes using model.predict_proba() and optionally plot confidence.
+
+    Parameters
+    ----------
+    model : estimator
+        Trained classifier with predict_proba() method.
+    X_test : array-like or DataFrame
+        Input data used for prediction.
+    X_plot : DataFrame, optional
+        Dataset used for plotting. If None, X_test is used.
+    feature_x : str, default="g_r"
+        Column name for x-axis in scatter plot.
+    feature_y : str, default="r_i"
+        Column name for y-axis in scatter plot.
+    threshold : float, default=0.9
+        Confidence threshold below which predictions are marked uncertain.
+    uncertain_label : int, default=-1
+        Label assigned to uncertain predictions.
+    plot : bool, default=True
+        Whether to generate the confidence scatter plot.
+    cmap : str, default="viridis"
+        Colormap for scatter plot.
+
+    Returns
+    -------
+    dict
+        Dictionary containing:
+        - probabilities
+        - confidence
+        - predictions
+        - final_predictions
+    """
+
+    # Predict probabilities
+    probs = model.predict_proba(X_test)
+
+    # Confidence and predicted class
+    confidence = probs.max(axis=1)
+    predictions = probs.argmax(axis=1)
+
+    # Apply threshold
+    final_predictions = np.where(
+        confidence > threshold,
+        predictions,
+        uncertain_label,
+    )
+
+    # Plot
+    if plot:
+        if X_plot is None:
+            X_plot = X_test
+
+        plt.figure(figsize=(8, 6))
+        scatter = plt.scatter(
+            X_plot[feature_x],
+            X_plot[feature_y],
+            c=confidence,
+            cmap=cmap,
+        )
+
+        plt.xlabel(feature_x)
+        plt.ylabel(feature_y)
+        plt.colorbar(scatter, label="Confidence")
+        plt.title("Prediction Confidence")
+        plt.show()
+
+    return {
+        "probabilities": probs,
+        "confidence": confidence,
+        "predictions": predictions,
+        "final_predictions": final_predictions,
+    }
+
+
