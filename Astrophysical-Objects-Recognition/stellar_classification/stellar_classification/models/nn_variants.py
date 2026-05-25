@@ -16,18 +16,28 @@ class MediumNN(nn.Module):
         input → 128 → 64 → output
     """
 
-    def __init__(self, input_size: int, num_classes: int):
+    def __init__(self, input_size: int, num_classes: int, dropout: float = 0.0):
         super().__init__()
 
-        self.net = nn.Sequential(
+        layers = [
             nn.Linear(input_size, 128),
             nn.ReLU(),
+        ]
 
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+
+        layers += [
             nn.Linear(128, 64),
             nn.ReLU(),
+        ]
 
-            nn.Linear(64, num_classes),
-        )
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+
+        layers.append(nn.Linear(64, num_classes))
+
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
@@ -45,24 +55,44 @@ class ComplexNN(nn.Module):
         input → 512 → 256 → 128 → 64 → output
     """
 
-    def __init__(self, input_size: int, num_classes: int):
+    def __init__(self, input_size: int, num_classes: int, dropout: float = 0.0):
         super().__init__()
 
-        self.net = nn.Sequential(
+        layers = [
             nn.Linear(input_size, 512),
             nn.ReLU(),
+        ]
 
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+
+        layers += [
             nn.Linear(512, 256),
             nn.ReLU(),
+        ]
 
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+
+        layers += [
             nn.Linear(256, 128),
             nn.ReLU(),
+        ]
 
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+
+        layers += [
             nn.Linear(128, 64),
             nn.ReLU(),
+        ]
 
-            nn.Linear(64, num_classes),
-        )
+        if dropout > 0:
+            layers.append(nn.Dropout(dropout))
+
+        layers.append(nn.Linear(64, num_classes))
+
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
