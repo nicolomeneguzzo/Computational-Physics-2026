@@ -261,123 +261,169 @@ def plot_feature_ablation(
 
 
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.inspection import permutation_importance
+
+
 def plot_feature_importance(
     model,
-    X_test,
-    y_test,
     feature_names,
-    importance_types=None,
-    use_permutation=True,
+
+    # custom importance functions
+    importance_functions=None,
+
+    # permutation importance
+    use_permutation=False,
+    X_test=None,
+    y_test=None,
+    permutation_scoring=None,
     n_repeats=10,
     random_state=42,
+
+    # plot params
     normalize=True,
+    sort_by=None,
+    top_k=None,
     figsize=(14, 6),
-    top_k=None
+    rotation=45,
+    alpha=0.85,
 ):
     """
-    Universal feature importance plot for:
+    Fully generalized feature importance plotter.
+
+    Compatible with:
     - XGBoost
     - LightGBM
-    - RandomForest / sklearn models
+    - RandomForest
+    - Voting
+    - Neural Networks
+    - sklearn models
+    - custom models
 
     Parameters
     ----------
-    importance_types : list or None
-        If model supports get_booster().get_score, e.g. XGBoost:
-        ["weight","gain","total_gain","cover","total_cover"]
-        If None, auto-detect sklearn-style importance.
+    model : trained model
+
+    feature_names : list[str]
+
+    importance_functions : dict or None
+
+        Example:
+        {
+            "gain": lambda m: ...,
+            "weight": lambda m: ...,
+            "shap": lambda m: ...
+        }
+
+    use_permutation : bool
+        Automatically adds permutation importance.
+
+    X_test, y_test :
+        Required if use_permutation=True
     """
 
-    n_features = len(feature_names)
     results = {}
 
-    # --------------------------
-    # 1. TREE-BASED IMPORTANCE
-    # --------------------------
-    if importance_types is not None and hasattr(model, "get_booster"):
-        booster = model.get_booster()
+    # =====================================================
+    # 1. CUSTOM IMPORTANCE FUNCTIONS
+    # =====================================================
+    if importance_functions is not None:
 
-        for t in importance_types:
-            imp = booster.get_score(importance_type=t)
+        for name, func in importance_functions.items():
 
-            values = np.array([
-                imp.get(f"f{i}", 0)
-                for i in range(n_features)
-            ])
+            values = np.array(func(model))
 
             if normalize and values.sum() > 0:
                 values = values / values.sum()
 
-            results[t] = values
+            results[name] = values
 
-    else:
-        # sklearn / RF / LGBM style
-        if hasattr(model, "feature_importances_"):
-            values = np.array(model.feature_importances_)
-
-            if normalize and values.sum() > 0:
-                values = values / values.sum()
-
-            results["model_importance"] = values
-
-    # --------------------------
-    # 2. PERMUTATION IMPORTANCE
-    # --------------------------
+    # =====================================================
+    # 2. PERMUTATION IMPORTANCE (UNIVERSAL)
+    # =====================================================
     if use_permutation:
+
         perm = permutation_importance(
             model,
             X_test,
             y_test,
+            scoring=permutation_scoring,
             n_repeats=n_repeats,
             random_state=random_state,
             n_jobs=-1
         )
 
-        values = perm.importances_mean
+        values = np.array(perm.importances_mean)
 
         if normalize and values.sum() > 0:
             values = values / values.sum()
 
         results["permutation"] = values
 
-    # --------------------------
+    # =====================================================
     # 3. DATAFRAME
-    # --------------------------
-    df = pd.DataFrame(results, index=feature_names)
+    # =====================================================
+    df = pd.DataFrame(
+        results,
+        index=feature_names
+    )
 
-    # sort by permutation if exists else first column
-    sort_col = "permutation" if "permutation" in df.columns else df.columns[0]
-    df = df.sort_values(sort_col, ascending=False)
+    # sorting
+    if sort_by is None:
+        sort_by = df.columns[0]
 
+    df = df.sort_values(
+        sort_by,
+        ascending=False
+    )
+
+    # top k
     if top_k is not None:
         df = df.head(top_k)
 
-    # --------------------------
+    # =====================================================
     # 4. PLOT
-    # --------------------------
+    # =====================================================
     x = np.arange(len(df.index))
+
     width = 0.8 / len(df.columns)
 
     plt.figure(figsize=figsize)
 
     for i, col in enumerate(df.columns):
+
         plt.bar(
             x + i * width,
             df[col].values,
             width=width,
             label=col,
-            alpha=0.85
+            alpha=alpha
         )
 
-    plt.xticks(x + width * (len(df.columns)-1)/2,
-               df.index,
-               rotation=45,
-               ha="right")
+    plt.xticks(
+        x + width * (len(df.columns)-1)/2,
+        df.index,
+        rotation=rotation,
+        ha="right"
+    )
 
-    plt.ylabel("Normalized importance" if normalize else "Importance")
+    plt.ylabel(
+        "Normalized importance"
+        if normalize
+        else "Importance"
+    )
+
     plt.title("Feature Importance Comparison")
+
     plt.legend()
+
     plt.tight_layout()
+
     plt.show()
 
     return df
+
+
