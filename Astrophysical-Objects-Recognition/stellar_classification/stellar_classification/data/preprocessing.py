@@ -105,8 +105,8 @@ def prepare_splits(
     X_test  = scaler.transform(X_test)
 
     # ── 7. SMOTE on training set ──────────────────────────────────────────────
-    # smote = SMOTE(random_state=1)
-    # X_train, y_train = smote.fit_resample(X_train, y_train)
+    smote = SMOTE(random_state=1)
+    X_train, y_train = smote.fit_resample(X_train, y_train)
 
     gc.collect()
     return X_train, X_val, X_test, y_train, y_val, y_test, le, scaler, feature_names
