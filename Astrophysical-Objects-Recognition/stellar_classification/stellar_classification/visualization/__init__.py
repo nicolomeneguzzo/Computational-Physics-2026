@@ -141,3 +141,120 @@ def plot_feature_ablation(
     if standalone:
         plt.tight_layout()
         plt.show()
+
+#funzione di sara 
+def plot_prediction_and_error_map(
+    X,
+    y_true,
+    y_pred,
+    feature_x,
+    feature_y,
+    title_prefix="Model",
+    cmap="viridis",
+    error_cmap="coolwarm",
+    s=5,
+    alpha=0.5
+):
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import numpy as np
+
+    # FIX: keep full feature matrix
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+
+    fig, (ax0, ax1, ax2) = plt.subplots(1, 3, figsize=(18, 6))
+
+    # Ground truth
+    ax0.scatter(X[feature_x], X[feature_y],
+                c=y_true, cmap=cmap, s=s, alpha=alpha)
+    ax0.set_title("Ground Truth")
+    ax0.set_xlabel(feature_x)
+    ax0.set_ylabel(feature_y)
+
+    # Predictions
+    ax1.scatter(X[feature_x], X[feature_y],
+                c=y_pred, cmap=cmap, s=s, alpha=alpha)
+    ax1.set_title(f"{title_prefix} Predictions")
+    ax1.set_xlabel(feature_x)
+    ax1.set_ylabel(feature_y)
+
+    # Errors
+    errors = np.array(y_pred) != np.array(y_true)
+    ax2.scatter(X[feature_x], X[feature_y],
+                c=errors, cmap=error_cmap, s=s, alpha=alpha)
+    ax2.set_title("Misclassification map")
+    ax2.set_xlabel(feature_x)
+    ax2.set_ylabel(feature_y)
+
+    plt.tight_layout()
+    plt.show()
+
+#funzione di sara
+def plot_misclassified_feature_distributions(
+    X,
+    y_true,
+    y_pred,
+    features,
+    bins=50,
+    color="crimson",
+    alpha=0.7,
+    figsize=(12, 8),
+    title_prefix="Error"
+):
+    """
+    Plot feature distributions for misclassified samples.
+
+    Parameters
+    ----------
+    X : pd.DataFrame or np.ndarray
+        Feature matrix
+    y_true : array-like
+        True labels
+    y_pred : array-like
+        Predicted labels
+    features : list of str
+        Feature names to plot
+    bins : int
+        Number of histogram bins
+    color : str
+        Histogram color
+    alpha : float
+        Transparency
+    figsize : tuple
+        Figure size
+    title_prefix : str
+        Prefix for subplot titles
+    """
+
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    # Ensure DataFrame
+    if not isinstance(X, pd.DataFrame):
+        raise ValueError("X must be a pandas DataFrame with named features")
+
+    # Misclassified mask
+    errors = np.array(y_pred) != np.array(y_true)
+
+    # Filter misclassified samples
+    X_err = X[errors]
+
+    fig, axes = plt.subplots(2, 2, figsize=figsize)
+    axes = axes.ravel()
+
+    for i, feat in enumerate(features):
+        axes[i].hist(
+            X_err[feat],
+            bins=bins,
+            color=color,
+            alpha=alpha
+        )
+        axes[i].set_title(f"{title_prefix}: distribution of {feat}")
+        axes[i].set_xlabel(feat)
+        axes[i].set_ylabel("Error frequency")
+        axes[i].grid(alpha=0.2)
+
+    plt.tight_layout()
+    plt.show()    
