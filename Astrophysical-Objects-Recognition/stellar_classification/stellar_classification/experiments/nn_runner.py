@@ -21,17 +21,17 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model factory
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_model(model_type: str, input_size: int, num_classes: int):
+def build_model(model_type: str, input_size: int, num_classes: int, dropout: float = 0.0):
     """Create a model based on a string identifier."""
 
     if model_type == "SimpleNN":
         return SimpleNN(input_size, num_classes)
 
     elif model_type == "MediumNN":
-        return MediumNN(input_size, num_classes)
+        return MediumNN(input_size, num_classes, dropout=dropout)
 
     elif model_type == "ComplexNN":
-        return ComplexNN(input_size, num_classes)
+        return ComplexNN(input_size, num_classes, dropout=dropout)
 
     else:
         raise ValueError(f"Unknown model type: {model_type}")
@@ -202,5 +202,135 @@ def run_experiments(
             ]
         ].head(5)
     )
+
+    return results_df
+
+def run_dropout_ablation(
+    train_loader,
+    val_loader,
+    test_loader,
+    input_size: int,
+    num_classes: int,
+    best_models: dict,
+    dropout_values=(0.0, 0.3),
+    lr: float = 0.001,
+    epochs: int = 10,
+):
+    """
+    Run dropout ablation study on best MediumNN and ComplexNN models.
+
+    Parameters
+    ----------
+    best_models : dict
+        Example:
+        {
+            "MediumNN": True,
+            "ComplexNN": True
+        }
+
+    dropout_values : tuple
+        Dropout probabilities to test.
+    """
+
+    results = []
+
+    # Only these architectures
+    target_models = ["MediumNN", "ComplexNN"]
+
+    for model_type in target_models:
+
+        # Skip if not provided in best_models
+        if best_models is not None and model_type not in best_models:
+            continue
+
+        for dropout in dropout_values:
+
+            print(f"\nDropout test → {model_type} | dropout={dropout}")
+
+            # ─────────────────────────────────────────────
+            # 1. Build model with dropout
+            # ─────────────────────────────────────────────
+            model = build_model(
+                model_type,
+                input_size,
+                num_classes,
+                dropout=dropout  # IMPORTANT
+            )
+
+            # ─────────────────────────────────────────────
+            # 2. Train model
+            # ─────────────────────────────────────────────
+            trained_model, history, final_metrics = train_neural(
+                model=model,
+                train_loader=train_loader,
+                val_loader=val_loader,
+                lr=lr,
+                num_epochs=epochs,
+            )
+
+            # ─────────────────────────────────────────────
+            # 3. Evaluate
+            # ─────────────────────────────────────────────
+            val_metrics = evaluate_neural(
+                val_loader,
+                trained_model,
+                device,
+                model_name=f"{model_type}_dropout_{dropout}"
+            )
+
+            test_metrics = evaluate_neural(
+                test_loader,
+                trained_model,
+                device,
+                model_name=f"{model_type}_dropout_{dropout}"
+            )
+
+            # ─────────────────────────────────────────────
+            # 4. Store results
+            # ─────────────────────────────────────────────
+            results.append({
+                "model": model_type,
+                "dropout": dropout,
+
+                "final_loss": final_metrics["final_loss"],
+                "final_train_acc": final_metrics["final_train_acc"],
+                "final_val_acc": final_metrics["final_val_acc"],
+
+                "val_accuracy": val_metrics["accuracy"],
+                "val_f1": val_metrics["f1"],
+
+                "test_accuracy": test_metrics["accuracy"],
+                "test_f1": test_metrics["f1"],
+
+                "history": history,
+            })
+
+            print(
+                f"✔ Done: {model_type} | dropout={dropout} | "
+                f"val_f1={val_metrics['f1']:.4f}"
+            )
+
+    # ─────────────────────────────────────────────
+    # Summary dataframe
+    # ─────────────────────────────────────────────
+    results_df = pd.DataFrame(results)
+
+    results_df = results_df.sort_values(by="val_f1", ascending=False)
+
+    print("\nDROPPOUT ABLATION BEST:")
+    print(results_df.iloc[0])
+
+    print("\nTOP RESULTS:")
+    print(results_df[[
+        "model",
+        "dropout",
+        "final_loss",
+        "final_train_acc",
+        "final_val_acc",
+        "val_accuracy",
+        "val_f1",
+        "test_accuracy",
+        "test_f1",
+    ]])
 
     return results_df
