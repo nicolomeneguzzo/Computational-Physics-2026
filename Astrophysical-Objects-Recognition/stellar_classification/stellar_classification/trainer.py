@@ -143,7 +143,7 @@ def train_neural(
     lr: float = 0.001,
     num_epochs: int = 10,
 ):
-    """Train a given PyTorch model (architecture is external)."""
+    """Train a given PyTorch model and return training history."""
 
     import torch
     import torch.nn as nn
@@ -154,18 +154,38 @@ def train_neural(
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    # ────────────────────────────────────────────────────────────────────────
+    # Training history
+    # ────────────────────────────────────────────────────────────────────────
+
+    history = {
+        "train_loss": [],
+        "train_accuracy": [],
+        "val_accuracy": [],
+    }
+
+    # ────────────────────────────────────────────────────────────────────────
+    # Training loop
+    # ────────────────────────────────────────────────────────────────────────
+
     for epoch in range(num_epochs):
 
-        # ── TRAIN ────────────────────────────────────────────────────────────
+        # ── TRAIN ───────────────────────────────────────────────────────────
         model.train()
+
         running_loss = 0.0
+        correct_train = 0
+        total_train = 0
 
         for X_batch, y_batch in train_loader:
-            X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+
+            X_batch = X_batch.to(device)
+            y_batch = y_batch.to(device)
 
             optimizer.zero_grad(set_to_none=True)
 
             outputs = model(X_batch)
+
             loss = criterion(outputs, y_batch)
 
             loss.backward()
@@ -173,24 +193,59 @@ def train_neural(
 
             running_loss += loss.item()
 
-        # ── VALIDATION ───────────────────────────────────────────────────────
+            # predictions
+            _, pred = outputs.max(1)
+
+            correct_train += (pred == y_batch).sum().item()
+            total_train += y_batch.size(0)
+
+        # ── TRAIN METRICS ───────────────────────────────────────────────────
+        avg_loss = running_loss / len(train_loader)
+        train_acc = 100 * correct_train / total_train
+
+        # ── VALIDATION ──────────────────────────────────────────────────────
         model.eval()
-        correct = 0
-        total = 0
+
+        correct_val = 0
+        total_val = 0
 
         with torch.no_grad():
+
             for Xb, yb in val_loader:
-                Xb, yb = Xb.to(device), yb.to(device)
+
+                Xb = Xb.to(device)
+                yb = yb.to(device)
 
                 outputs = model(Xb)
+
                 _, pred = outputs.max(1)
 
-                correct += (pred == yb).sum().item()
-                total += yb.size(0)
+                correct_val += (pred == yb).sum().item()
+                total_val += yb.size(0)
 
-        avg_loss = running_loss / len(train_loader)
-        val_acc = 100 * correct / total
+        val_acc = 100 * correct_val / total_val
 
-        print(f"Epoch {epoch+1}/{num_epochs} | loss={avg_loss:.4f} | val_acc={val_acc:.2f}%")
+        # ── SAVE HISTORY ────────────────────────────────────────────────────
+        history["train_loss"].append(avg_loss)
+        history["train_accuracy"].append(train_acc)
+        history["val_accuracy"].append(val_acc)
 
-    return model
+        # ── LOGGING ─────────────────────────────────────────────────────────
+        print(
+            f"Epoch {epoch+1}/{num_epochs} | "
+            f"loss={avg_loss:.4f} | "
+            f"train_acc={train_acc:.2f}% | "
+            f"val_acc={val_acc:.2f}%"
+        )
+
+    # ────────────────────────────────────────────────────────────────────────
+    # Final metrics
+    # ────────────────────────────────────────────────────────────────────────
+
+    final_metrics = {
+        "final_loss": history["train_loss"][-1],
+        "final_train_acc": history["train_accuracy"][-1],
+        "final_val_acc": history["val_accuracy"][-1],
+    }
+
+    return model, history, final_metrics
