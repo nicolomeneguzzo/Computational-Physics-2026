@@ -2,7 +2,6 @@
 
 import itertools
 import pandas as pd
-import numpy as np
 import torch
 
 from stellar_classification.models.network import SimpleNN
@@ -10,7 +9,13 @@ from stellar_classification.models.nn_variants import MediumNN, ComplexNN
 from stellar_classification.trainer import train_neural
 from stellar_classification.inference.predictor import evaluate_neural
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Device
+# ─────────────────────────────────────────────────────────────────────────────
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Model factory
@@ -18,7 +23,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def build_model(model_type: str, input_size: int, num_classes: int):
     """Create a model based on a string identifier."""
-    
+
     if model_type == "SimpleNN":
         return SimpleNN(input_size, num_classes)
 
@@ -47,14 +52,18 @@ def run_experiments(
     epochs: int = 10,
 ):
     """
-    Run grid search over NN architectures and learning rates.
+    Run experiments over multiple NN architectures and learning rates.
     """
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Default configurations
+    # ─────────────────────────────────────────────────────────────────────────
 
     if model_types is None:
         model_types = ["SimpleNN", "MediumNN", "ComplexNN"]
 
     if learning_rates is None:
-        learning_rates = [0.1, 0.01, 0.001]
+        learning_rates = [0.01, 0.001, 0.0001]
 
     results = []
 
@@ -64,13 +73,19 @@ def run_experiments(
 
     for model_type, lr in itertools.product(model_types, learning_rates):
 
-        print(f"\n Training {model_type} | lr={lr}")
+        print(f"\nTraining {model_type} | lr={lr}")
 
-        # 1. build model
+        # ─────────────────────────────────────────────────────────────────────
+        # 1. Build model
+        # ─────────────────────────────────────────────────────────────────────
+
         model = build_model(model_type, input_size, num_classes)
 
-        # 2. train model
-        trained_model = train_neural(
+        # ─────────────────────────────────────────────────────────────────────
+        # 2. Train model
+        # ─────────────────────────────────────────────────────────────────────
+
+        trained_model, history, final_metrics = train_neural(
             model=model,
             train_loader=train_loader,
             val_loader=val_loader,
@@ -78,8 +93,21 @@ def run_experiments(
             num_epochs=epochs,
         )
 
+        # ─────────────────────────────────────────────────────────────────────
+        # 3. Evaluate on TRAIN
+        # ─────────────────────────────────────────────────────────────────────
 
-        # 3. evaluate on validation
+        train_metrics = evaluate_neural(
+            train_loader,
+            trained_model,
+            device,
+            model_name=model_type,
+        )
+
+        # ─────────────────────────────────────────────────────────────────────
+        # 4. Evaluate on VALIDATION
+        # ─────────────────────────────────────────────────────────────────────
+
         val_metrics = evaluate_neural(
             val_loader,
             trained_model,
@@ -87,7 +115,10 @@ def run_experiments(
             model_name=model_type,
         )
 
-        # 4. evaluate on test
+        # ─────────────────────────────────────────────────────────────────────
+        # 5. Evaluate on TEST
+        # ─────────────────────────────────────────────────────────────────────
+
         test_metrics = evaluate_neural(
             test_loader,
             trained_model,
@@ -95,29 +126,81 @@ def run_experiments(
             model_name=model_type,
         )
 
-        # 5. store results
+        # ─────────────────────────────────────────────────────────────────────
+        # 6. Save results
+        # ─────────────────────────────────────────────────────────────────────
+
         results.append({
+
+            # Model info
             "model": model_type,
             "learning_rate": lr,
+
+            # Final training info
+            "final_loss": final_metrics["final_loss"],
+            "final_train_acc": final_metrics["final_train_acc"],
+            "final_val_acc": final_metrics["final_val_acc"],
+
+            # Train metrics
+            "train_accuracy": train_metrics["accuracy"],
+            "train_f1": train_metrics["f1"],
+
+            # Validation metrics
             "val_accuracy": val_metrics["accuracy"],
             "val_f1": val_metrics["f1"],
+
+            # Test metrics
             "test_accuracy": test_metrics["accuracy"],
             "test_f1": test_metrics["f1"],
+
+            # Full training history
+            "history": history,
         })
 
-        print(f"✔ Done: {model_type} | lr={lr} | F1={val_metrics['f1']:.4f}")
+        # ─────────────────────────────────────────────────────────────────────
+        # 7. Logging
+        # ─────────────────────────────────────────────────────────────────────
+
+        print(
+            f"✔ Done: {model_type} | "
+            f"lr={lr} | "
+            f"loss={final_metrics['final_loss']:.4f} | "
+            f"train_acc={train_metrics['accuracy']:.2f}% | "
+            f"val_acc={val_metrics['accuracy']:.2f}% | "
+            f"val_f1={val_metrics['f1']:.4f}"
+        )
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Results summary
+    # Results dataframe
     # ─────────────────────────────────────────────────────────────────────────
 
     results_df = pd.DataFrame(results)
+
+    # Sort by validation F1
     results_df = results_df.sort_values(by="val_f1", ascending=False)
 
-    print("\n BEST CONFIGURATION:")
+    # ─────────────────────────────────────────────────────────────────────────
+    # Print summaries
+    # ─────────────────────────────────────────────────────────────────────────
+
+    print("\nBEST CONFIGURATION:")
     print(results_df.iloc[0])
 
-    print("\n TOP 5:")
-    print(results_df.head(5))
+    print("\nTOP 5 CONFIGURATIONS:")
+    print(
+        results_df[
+            [
+                "model",
+                "learning_rate",
+                "final_loss",
+                "train_accuracy",
+                "train_f1",
+                "val_accuracy",
+                "val_f1",
+                "test_accuracy",
+                "test_f1",
+            ]
+        ].head(5)
+    )
 
     return results_df
