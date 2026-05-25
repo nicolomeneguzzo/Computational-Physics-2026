@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.inspection import permutation_importance
 
 
 def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
@@ -258,3 +259,124 @@ def plot_misclassified_feature_distributions(
 
     plt.tight_layout()
     plt.show()    
+
+def plot_feature_importance(
+    model,
+    X_test,
+    y_test,
+    feature_names,
+    importance_types=None,
+    use_permutation=True,
+    n_repeats=10,
+    random_state=42,
+    normalize=True,
+    figsize=(14, 6),
+    top_k=None
+):
+    """
+    Universal feature importance plot for:
+    - XGBoost
+    - LightGBM
+    - RandomForest / sklearn models
+
+    Parameters
+    ----------
+    importance_types : list or None
+        If model supports get_booster().get_score, e.g. XGBoost:
+        ["weight","gain","total_gain","cover","total_cover"]
+        If None, auto-detect sklearn-style importance.
+    """
+
+    n_features = len(feature_names)
+    results = {}
+
+    # --------------------------
+    # 1. TREE-BASED IMPORTANCE
+    # --------------------------
+    if importance_types is not None and hasattr(model, "get_booster"):
+        booster = model.get_booster()
+
+        for t in importance_types:
+            imp = booster.get_score(importance_type=t)
+
+            values = np.array([
+                imp.get(f"f{i}", 0)
+                for i in range(n_features)
+            ])
+
+            if normalize and values.sum() > 0:
+                values = values / values.sum()
+
+            results[t] = values
+
+    else:
+        # sklearn / RF / LGBM style
+        if hasattr(model, "feature_importances_"):
+            values = np.array(model.feature_importances_)
+
+            if normalize and values.sum() > 0:
+                values = values / values.sum()
+
+            results["model_importance"] = values
+
+    # --------------------------
+    # 2. PERMUTATION IMPORTANCE
+    # --------------------------
+    if use_permutation:
+        perm = permutation_importance(
+            model,
+            X_test,
+            y_test,
+            n_repeats=n_repeats,
+            random_state=random_state,
+            n_jobs=-1
+        )
+
+        values = perm.importances_mean
+
+        if normalize and values.sum() > 0:
+            values = values / values.sum()
+
+        results["permutation"] = values
+
+    # --------------------------
+    # 3. DATAFRAME
+    # --------------------------
+    df = pd.DataFrame(results, index=feature_names)
+
+    # sort by permutation if exists else first column
+    sort_col = "permutation" if "permutation" in df.columns else df.columns[0]
+    df = df.sort_values(sort_col, ascending=False)
+
+    if top_k is not None:
+        df = df.head(top_k)
+
+    # --------------------------
+    # 4. PLOT
+    # --------------------------
+    x = np.arange(len(df.index))
+    width = 0.8 / len(df.columns)
+
+    plt.figure(figsize=figsize)
+
+    for i, col in enumerate(df.columns):
+        plt.bar(
+            x + i * width,
+            df[col].values,
+            width=width,
+            label=col,
+            alpha=0.85
+        )
+
+    plt.xticks(x + width * (len(df.columns)-1)/2,
+               df.index,
+               rotation=45,
+               ha="right")
+
+    plt.ylabel("Normalized importance" if normalize else "Importance")
+    plt.title("Feature Importance Comparison")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    return df
