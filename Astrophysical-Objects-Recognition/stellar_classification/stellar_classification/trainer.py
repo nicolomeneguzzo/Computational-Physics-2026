@@ -203,8 +203,6 @@ def train_neural(
     return model
 
 ####### parte aggiunta da enrica ##########
-
-
 def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
     """RF e ET con hyperparameter tuning via RandomizedSearchCV."""
     param_dist_rf= {
