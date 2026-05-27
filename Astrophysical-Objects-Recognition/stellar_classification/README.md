@@ -328,3 +328,23 @@ first problem: linearSVC has no native predict_proba
 | **GALAXY** | 9797 | 552 | 432 |
 | **STAR** | 193 | 3135 | 220 |
 | **QUASAR** | 332 | 510 | 3086 |
+
+
+## GridSearch ##
+
+res:
+Best params: {'cv': 10, 'final_estimator__C': 10}
+
+Stacking Classifier trained.
+  [Training] Acc=100.00%  P=1.00  R=1.00  F1=1.00
+  [Validation] Acc=89.98%  P=0.87  R=0.87  F1=0.87
+
+Stacking Classifier:
+  Accuracy  : 90.17%
+  Precision: 0.8724
+  Recall   : 0.8742
+  F1       : 0.8731
+  Confusion Matrix:
+[[10199   333   249]
+ [  250  3001   297]
+ [  304   361  3263]]
