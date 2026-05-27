@@ -13,4 +13,5 @@ data/
 */notebooks/catboost_info
 *.pk1
 *.pth
+*.pkl
 trained_models/
