@@ -33,11 +33,17 @@ from .visualization import (  # noqa: F401
     plot_class_distribution,
     plot_confusion_matrix,
     plot_permutation_importance,
+    plot_feature_ablation, #enrica?
+    plot_prediction_and_error_map, #sara function
+    plot_misclassified_feature_distributions, #sara function
+    plot_feature_importance #sara function
 )
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
 
 from .stacking import train_stacking
+from .stacking import make_stacking_classifier
+from .stacking import stack_training_models
 
 __all__ = [
     # data
