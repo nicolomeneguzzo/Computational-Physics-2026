@@ -4,6 +4,7 @@ import gc
 import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
 
 #sistemare il warning di LightGBM fa creare warning a tutti gli altri modelli addestrati senza
 #feature name, quindi meglio ingorarli
@@ -59,34 +60,13 @@ print(f"X_test shape: {X_test.shape}")
 print("\nClass Distribution:")
 print(star["class"].value_counts(normalize=True) * 100)
 
-models = sc.stack_training_models(
-    X_train,
-    y_train
-)
+models = sc.train_traditional(X_train, y_train, X_val, y_val)
 
-stacking_clf = sc.make_stacking_classifier(
-    models=models,
-    n_jobs=2,
-)
+stacking_clf = sc.train_stacking(X_train, y_train, X_val, y_val, models=models, final_estimator=LogisticRegression(C=10, max_iter=1000), cv=10)
 
-from sklearn.model_selection import GridSearchCV
+y_test_pred_stacking = stacking_clf.predict(X_test)
+stacking_metrics = sc.evaluate_test_set(y_test, y_test_pred_stacking, "Stacking Classifier")
+sc.print_metrics(stacking_metrics)
+class_names = list(label_encoder.classes_)
 
-param_grid = {
-    'final_estimator__C': [0.1, 1, 10],
-    'cv' : [3, 5, 10] 
-    }
-
-grid = GridSearchCV(
-    estimator=stacking_clf,
-    param_grid=param_grid,
-    scoring='f1_weighted',
-    cv=3,
-    verbose=2,
-    n_jobs=2,
-    return_train_score=True
-)
-grid.fit(X_train, y_train)
-
-joblib.dump(grid, 'grid_search_results.pkl')
-print("Best params:", grid.best_params_)
-print("Best score:", grid.best_score_)
+sc.plot_confusion_matrix(stacking_metrics['confusion_matrix'], class_names=class_names, title='Confusion matrix - Stacking Classifier')
