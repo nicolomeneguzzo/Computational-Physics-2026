@@ -5,7 +5,7 @@ Quick-start
 >>> from stellar_classification.data.preprocessing import prepare_splits, to_dataloaders
 >>> from stellar_classification.trainer import train_traditional, train_voting, train_neural
 >>> from stellar_classification.inference.predictor import (
-...     evaluate_test_set, evaluate_neural, compute_permutation_importance, shap_summary_tree_model, predict_with_confidence
+...     evaluate_test_set, evaluate_neural, compute_permutation_importance, shap_summary_tree_model, predict_with_confidence, predict_with_qso_threshold
 ... )
 >>> from stellar_classification.visualization import (
 ...     plot_class_distribution, plot_confusion_matrix, plot_permutation_importance, plot_prediction_and_error_map, plot_misclassified_feature_distributions, plot_feature_ablation, plot_feature_importance
@@ -32,6 +32,7 @@ from .inference.predictor import (  # noqa: F401
     compute_permutation_importance,
     shap_summary_tree_model,
     predict_with_confidence,
+    predict_with_qso_threshold,
 )
 from .visualization import (  # noqa: F401
     plot_class_distribution,
@@ -51,7 +52,7 @@ __all__ = [
     # training
     'compute_metrics', 'train_traditional', 'train_voting', 'train_neural',
     # inference
-    'evaluate_test_set', 'evaluate_neural', 'compute_permutation_importance', 'shap_summary_tree_model', 'predict_with_confidence',
+    'evaluate_test_set', 'evaluate_neural', 'compute_permutation_importance', 'shap_summary_tree_model', 'predict_with_confidence', 'predict_with_qso_threshold',
     # visualization
     'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance','plot_prediction_and_error_map',
       'plot_misclassified_feature_distributions', 'plot_feature_ablation', 'plot_feature_importance',

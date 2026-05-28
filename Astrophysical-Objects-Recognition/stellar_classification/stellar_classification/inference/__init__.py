@@ -7,6 +7,7 @@ from .predictor import (  # noqa: F401
     compute_shap,
     shap_summary_tree_model,
     predict_with_confidence,
+    predict_with_qso_threshold,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     'compute_shap',
     'shap_summary_tree_model',
     'predict_with_confidence',
+    'predict_with_qso_threshold',
 ]

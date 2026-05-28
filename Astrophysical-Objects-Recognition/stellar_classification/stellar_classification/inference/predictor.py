@@ -216,3 +216,28 @@ def predict_with_confidence(
     }
 
 
+def predict_with_qso_threshold(model, X, threshold=0.6):
+
+    probs = model.predict_proba(X)
+
+    preds = []
+
+    for p in probs:
+
+        p_galaxy = p[0]
+        p_quasar = p[1]
+        p_star   = p[2]
+
+        if p_quasar > threshold:
+
+            preds.append(1)
+
+        else:
+
+            if p_galaxy > p_star:
+                preds.append(0)
+
+            else:
+                preds.append(2)
+
+    return np.array(preds)
