@@ -18,6 +18,8 @@ from lightgbm import LGBMClassifier
 
 from .models.network import SimpleNN
 
+from xgboost import XGBClassifier
+
 
 # ── Model factory ─────────────────────────────────────────────────────────────
 
@@ -28,11 +30,11 @@ def _make_models() -> dict:
         'Linear SVC':     LinearSVC(),
         'Decision Tree':  DecisionTreeClassifier(),
         'Random Forest':  RandomForestClassifier(),
-        'CatBoost':       CatBoostClassifier(
-                              task_type='GPU' if use_gpu else 'CPU', verbose=0),
-        'LightGBM':       LGBMClassifier(
-                              device='gpu' if use_gpu else 'cpu'),
-    }
+        #'CatBoost':       CatBoostClassifier(
+         #                     task_type='GPU' if use_gpu else 'CPU', verbose=0),
+        'LightGBM':       LGBMClassifier(subsample=0.8, reg_lambda=10, reg_alpha=1, num_leaves=31, n_estimators=1000, max_depth=3, learning_rate=0.1, colsample_bytree=1, device='gpu' if use_gpu else 'cpu'), #anche qua guarda sara  n_estimator=1000 max_depht=3
+        'XGBoost':        XGBClassifier(n_estimator=1000, subsample=0.8, reg_lambda=10, reg_alpha=0.1, min_child_weight=1, max_depht=3, learning_rate=0.1, gamma=0.3, colsample_bytree=1.0, device='gpu' if use_gpu else 'cpu'), #guarda best hyperparameter da sara  n_estimator=1000 max_depht=3
+        }
 
 
 # ── Metrics helper ────────────────────────────────────────────────────────────
@@ -119,8 +121,9 @@ def train_voting(
         ('svc',      models['Linear SVC']),
         ('dt',       models['Decision Tree']),
         ('rf',       models['Random Forest']),
-        ('catboost', models['CatBoost']),
+       # ('catboost', models['CatBoost']),
         ('lgbm',     models['LightGBM']),
+        ('xgb',      models['XGBoost']),
     ]
     voting_clf = _Voting(estimators=estimators, voting='hard')
     voting_clf.fit(X_train, y_train)

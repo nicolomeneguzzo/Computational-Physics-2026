@@ -11,6 +11,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
+from xgboost import XGBClassifier
+ 
 
 #for making calibrated probability
 from sklearn.calibration import CalibratedClassifierCV
@@ -29,8 +31,9 @@ def _make_stacking_models() -> dict:
         'Linear SVC':    LinearSVC(),
         'Decision Tree': DecisionTreeClassifier(),
         'Random Forest': RandomForestClassifier(),
-        'CatBoost':      CatBoostClassifier(task_type='GPU' if use_gpu else 'CPU', verbose=0),
-        'LightGBM':      LGBMClassifier(device='gpu' if use_gpu else 'cpu'),
+       # 'CatBoost':      CatBoostClassifier(task_type='CPU', verbose=0),
+        'LightGBM':      LGBMClassifier(subsample=0.8, reg_lambda=10, reg_alpha=1, num_leaves=31, n_estimators=1000, max_depth=3, learning_rate=0.1, colsample_bytree=1, device='gpu' if use_gpu else 'cpu'),
+        'XGBoost':       XGBClassifier(n_estimator=1000, subsample=0.8, reg_lambda=10, reg_alpha=0.1, min_child_weight=1, max_depht=3, learning_rate=0.1, gamma=0.3, colsample_bytree=1.0, device='gpu' if use_gpu else 'cpu'),
     }
 
 def stack_training_models(
@@ -68,8 +71,10 @@ def make_stacking_classifier(
         ('svc', calibrated_svc),
         ('dt', models['Decision Tree']),
         ('rf', models['Random Forest']),
-        ('catboost', models['CatBoost']),
+        #('catboost', models['CatBoost']),
         ('lgbm', models['LightGBM']),
+        ('xgb',  models['XGBoost']),
+
     ]
 
     stacking_clf = StackingClassifier(
