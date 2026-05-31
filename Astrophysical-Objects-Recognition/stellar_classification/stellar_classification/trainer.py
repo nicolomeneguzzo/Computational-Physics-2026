@@ -210,7 +210,8 @@ def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
         'max_depth':         [5, 10, 15, 20, None],
         'min_samples_split': [2, 5, 10, 20],
         'min_samples_leaf':  [1, 2, 4],
-        'max_features':      ['log2', 0.5, 'sqrt', None]
+        'max_features':      ['log2', 0.5, 'sqrt', None],
+        'max_samples':       [0.6, 0.7, 0.8] #per overfitting 
     
     }
     param_dist_et = {
