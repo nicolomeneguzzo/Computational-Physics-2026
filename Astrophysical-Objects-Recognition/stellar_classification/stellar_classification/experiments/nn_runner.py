@@ -211,55 +211,60 @@ def run_dropout_ablation(
     test_loader,
     input_size: int,
     num_classes: int,
-    best_models: dict,
-    dropout_values=(0.0, 0.3),
-    lr: float = 0.001,
+    results_df: pd.DataFrame,
+    dropout_values=(0.0, 0.2, 0.3, 0.5),
     epochs: int = 10,
 ):
     """
-    Run dropout ablation study on best MediumNN and ComplexNN models.
-
-    Parameters
-    ----------
-    best_models : dict
-        Example:
-        {
-            "MediumNN": True,
-            "ComplexNN": True
-        }
-
-    dropout_values : tuple
-        Dropout probabilities to test.
+    Dropout ablation study using the best learning rate found
+    for each architecture in run_experiments().
     """
 
     results = []
 
-    # Only these architectures
     target_models = ["MediumNN", "ComplexNN"]
 
     for model_type in target_models:
 
-        # Skip if not provided in best_models
-        if best_models is not None and model_type not in best_models:
-            continue
+        # --------------------------------------------------
+        # Recupera automaticamente il best LR
+        # --------------------------------------------------
+
+        best_row = (
+            results_df[results_df["model"] == model_type]
+            .sort_values("val_f1", ascending=False)
+            .iloc[0]
+        )
+
+        lr = best_row["learning_rate"]
+
+        print(
+            f"\nBest configuration for {model_type}: "
+            f"lr={lr} | val_f1={best_row['val_f1']:.4f}"
+        )
 
         for dropout in dropout_values:
 
-            print(f"\nDropout test → {model_type} | dropout={dropout}")
+            print(
+                f"\nDropout test → "
+                f"{model_type} | lr={lr} | dropout={dropout}"
+            )
 
-            # ─────────────────────────────────────────────
-            # 1. Build model with dropout
-            # ─────────────────────────────────────────────
+            # --------------------------------------------------
+            # Build model
+            # --------------------------------------------------
+
             model = build_model(
                 model_type,
                 input_size,
                 num_classes,
-                dropout=dropout  # IMPORTANT
+                dropout=dropout,
             )
 
-            # ─────────────────────────────────────────────
-            # 2. Train model
-            # ─────────────────────────────────────────────
+            # --------------------------------------------------
+            # Train
+            # --------------------------------------------------
+
             trained_model, history, final_metrics = train_neural(
                 model=model,
                 train_loader=train_loader,
@@ -268,28 +273,35 @@ def run_dropout_ablation(
                 num_epochs=epochs,
             )
 
-            # ─────────────────────────────────────────────
-            # 3. Evaluate
-            # ─────────────────────────────────────────────
+            # --------------------------------------------------
+            # Validation
+            # --------------------------------------------------
+
             val_metrics = evaluate_neural(
                 val_loader,
                 trained_model,
                 device,
-                model_name=f"{model_type}_dropout_{dropout}"
+                model_name=f"{model_type}_dropout_{dropout}",
             )
+
+            # --------------------------------------------------
+            # Test
+            # --------------------------------------------------
 
             test_metrics = evaluate_neural(
                 test_loader,
                 trained_model,
                 device,
-                model_name=f"{model_type}_dropout_{dropout}"
+                model_name=f"{model_type}_dropout_{dropout}",
             )
 
-            # ─────────────────────────────────────────────
-            # 4. Store results
-            # ─────────────────────────────────────────────
+            # --------------------------------------------------
+            # Save
+            # --------------------------------------------------
+
             results.append({
                 "model": model_type,
+                "learning_rate": lr,
                 "dropout": dropout,
 
                 "final_loss": final_metrics["final_loss"],
@@ -306,31 +318,19 @@ def run_dropout_ablation(
             })
 
             print(
-                f"✔ Done: {model_type} | dropout={dropout} | "
+                f"✔ Done: {model_type} | "
+                f"lr={lr} | "
+                f"dropout={dropout} | "
                 f"val_f1={val_metrics['f1']:.4f}"
             )
 
-    # ─────────────────────────────────────────────
-    # Summary dataframe
-    # ─────────────────────────────────────────────
-    results_df = pd.DataFrame(results)
+    results_df_dropout = pd.DataFrame(results)
+    results_df_dropout = results_df_dropout.sort_values(
+        by="val_f1",
+        ascending=False,
+    )
 
-    results_df = results_df.sort_values(by="val_f1", ascending=False)
+    print("\nDROPPOUT ABLATION RESULTS")
+    print(results_df_dropout)
 
-    print("\nDROPPOUT ABLATION BEST:")
-    print(results_df.iloc[0])
-
-    print("\nTOP RESULTS:")
-    print(results_df[[
-        "model",
-        "dropout",
-        "final_loss",
-        "final_train_acc",
-        "final_val_acc",
-        "val_accuracy",
-        "val_f1",
-        "test_accuracy",
-        "test_f1",
-    ]])
-
-    return results_df
+    return results_df_dropout
