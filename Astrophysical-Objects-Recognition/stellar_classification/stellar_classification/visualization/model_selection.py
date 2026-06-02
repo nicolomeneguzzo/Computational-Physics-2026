@@ -38,13 +38,23 @@ def get_final_candidates(results_df, dropout_results, top_k: int = 3, sort_by: s
     return final_sorted
 
 
-def plot_feature_ablation(df: pd.DataFrame, title: str = "Feature Ablation Study"):
+import matplotlib.pyplot as plt
+
+def plot_feature_ablation(
+    df: pd.DataFrame,
+    best_val_f1: float,
+    title: str = "Feature Ablation Study"
+):
     """
     Plot F1-score vs number of features for ablation study.
+    Also shows baseline (best model) and 95% threshold.
     """
 
     plt.figure(figsize=(10, 6))
 
+    # ─────────────────────────────
+    # Curves
+    # ─────────────────────────────
     plt.plot(
         df["n_features"],
         df["val_f1"],
@@ -59,6 +69,31 @@ def plot_feature_ablation(df: pd.DataFrame, title: str = "Feature Ablation Study
         label="Test F1"
     )
 
+    # ─────────────────────────────
+    # Baseline (best model)
+    # ─────────────────────────────
+    plt.axhline(
+        y=best_val_f1,
+        color="red",
+        linestyle="--",
+        linewidth=2,
+        label=f"Best Model F1 ({best_val_f1:.4f})"
+    )
+
+    # ─────────────────────────────
+    # 95% threshold
+    # ─────────────────────────────
+    plt.axhline(
+        y=0.95 * best_val_f1,
+        color="orange",
+        linestyle="--",
+        linewidth=2,
+        label=f"95% of Best F1 ({0.95 * best_val_f1:.4f})"
+    )
+
+    # ─────────────────────────────
+    # Labels
+    # ─────────────────────────────
     plt.xlabel("Number of Features")
     plt.ylabel("F1 Score")
     plt.title(title)
