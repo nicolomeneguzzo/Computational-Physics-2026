@@ -6,6 +6,7 @@ from sklearn.inspection import permutation_importance
 import shap
 import torch
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import matplotlib.pyplot as plt
 
 
 def evaluate_test_set(
@@ -104,9 +105,6 @@ def shap_summary_tree_model(model, X, feature_names, class_names=None, show=True
     shap_values : computed SHAP values
     """
 
-    import pandas as pd
-    import shap
-
     # Ensure DataFrame format
     X_df = pd.DataFrame(X, columns=feature_names)
 
@@ -126,16 +124,15 @@ def shap_summary_tree_model(model, X, feature_names, class_names=None, show=True
         shap.summary_plot(shap_values[:, :, i], X_df, show=show)
 
     return shap_values
-import numpy as np
-import matplotlib.pyplot as plt
+
 
 
 def predict_with_confidence(
     model,
     X_test,
+    feature_x,
+    feature_y,
     X_plot=None,
-    feature_x="g_r",
-    feature_y="r_i",
     threshold=0.9,
     uncertain_label=-1,
     plot=True,

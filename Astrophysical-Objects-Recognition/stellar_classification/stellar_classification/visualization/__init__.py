@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.inspection import permutation_importance
-
+from sklearn.model_selection import learning_curve 
 
 
 def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
@@ -93,10 +93,7 @@ def plot_prediction_and_error_map(
     s=5,
     alpha=0.5
 ):
-    import matplotlib.pyplot as plt
-    import pandas as pd
-    import numpy as np
-
+    
     # FIX: keep full feature matrix
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
@@ -167,9 +164,7 @@ def plot_misclassified_feature_distributions(
         Prefix for subplot titles
     """
 
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
+   
 
     # Ensure DataFrame
     if not isinstance(X, pd.DataFrame):
@@ -260,12 +255,6 @@ def plot_feature_ablation(
 
 
 
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-
-from sklearn.inspection import permutation_importance
 
 
 def plot_feature_importance(
@@ -427,3 +416,61 @@ def plot_feature_importance(
     return df
 
 
+
+
+def plot_learning_curve(
+    model,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    title: str = 'Learning Curve',
+    cv: int = 5,
+    n_points: int = 10,
+    ax=None,
+) -> None:
+    """Plot training and validation accuracy vs training set size.
+
+    Parameters
+    ----------
+    model : unfitted sklearn estimator
+        Fresh model with desired hyperparameters.
+    X_train, y_train : np.ndarray
+        Training data.
+    title : str
+        Plot title.
+    cv : int
+        Number of cross-validation folds.
+    n_points : int
+        Number of points on the curve.
+    ax : matplotlib Axes, optional
+        If provided, draws on existing axes.
+    """
+    train_sizes, train_scores, val_scores = learning_curve(
+        model, X_train, y_train,
+        cv=cv, scoring='accuracy',
+        train_sizes=np.linspace(0.1, 1.0, n_points),
+        n_jobs=3
+    )
+
+    train_mean = train_scores.mean(axis=1)
+    train_std  = train_scores.std(axis=1)
+    val_mean   = val_scores.mean(axis=1)
+    val_std    = val_scores.std(axis=1)
+
+    standalone = ax is None
+    if standalone:
+        fig, ax = plt.subplots(figsize=(10, 5))
+
+    ax.plot(train_sizes, train_mean, label='Training', marker='o')
+    ax.plot(train_sizes, val_mean,   label='Validation', marker='o')
+    ax.fill_between(train_sizes, train_mean - train_std,
+                    train_mean + train_std, alpha=0.2)
+    ax.fill_between(train_sizes, val_mean - val_std,
+                    val_mean + val_std, alpha=0.2)
+    ax.set_xlabel('Training set size')
+    ax.set_ylabel('Accuracy')
+    ax.set_title(title)
+    ax.legend()
+
+    if standalone:
+        plt.tight_layout()
+        plt.show()
