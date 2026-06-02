@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def get_final_candidates(results_df, dropout_results, top_k: int = 3, sort_by: str = "val_f1"):
     """
@@ -35,3 +36,33 @@ def get_final_candidates(results_df, dropout_results, top_k: int = 3, sort_by: s
     final_sorted = combined.sort_values(by=sort_by, ascending=False)
 
     return final_sorted
+
+
+def plot_feature_ablation(df: pd.DataFrame, title: str = "Feature Ablation Study"):
+    """
+    Plot F1-score vs number of features for ablation study.
+    """
+
+    plt.figure(figsize=(10, 6))
+
+    plt.plot(
+        df["n_features"],
+        df["val_f1"],
+        marker="o",
+        label="Validation F1"
+    )
+
+    plt.plot(
+        df["n_features"],
+        df["test_f1"],
+        marker="o",
+        label="Test F1"
+    )
+
+    plt.xlabel("Number of Features")
+    plt.ylabel("F1 Score")
+    plt.title(title)
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
