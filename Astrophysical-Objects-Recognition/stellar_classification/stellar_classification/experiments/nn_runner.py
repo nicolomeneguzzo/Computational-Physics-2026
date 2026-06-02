@@ -135,6 +135,7 @@ def run_experiments(
             # Model info
             "model": model_type,
             "learning_rate": lr,
+            "trained_model": trained_model,
 
             # Final training info
             "final_loss": final_metrics["final_loss"],
@@ -303,6 +304,7 @@ def run_dropout_ablation(
                 "model": model_type,
                 "learning_rate": lr,
                 "dropout": dropout,
+                "trained_model": trained_model,
 
                 "final_loss": final_metrics["final_loss"],
                 "final_train_acc": final_metrics["final_train_acc"],
