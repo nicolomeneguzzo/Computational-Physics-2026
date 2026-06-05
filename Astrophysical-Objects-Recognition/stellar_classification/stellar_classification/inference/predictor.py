@@ -132,6 +132,7 @@ def predict_with_confidence(
     X_test,
     feature_x,
     feature_y,
+    title_prefix="Model",
     X_plot=None,
     threshold=0.9,
     uncertain_label=-1,
@@ -202,7 +203,7 @@ def predict_with_confidence(
         plt.xlabel(feature_x)
         plt.ylabel(feature_y)
         plt.colorbar(scatter, label="Confidence")
-        plt.title("Prediction Confidence")
+        plt.title(f"{title_prefix} Prediction Confidence")
         plt.show()
 
     return {

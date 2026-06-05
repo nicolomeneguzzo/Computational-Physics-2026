@@ -1,11 +1,14 @@
 """Visualization helpers for stellar classification."""
 
+from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.inspection import permutation_importance
 from sklearn.model_selection import learning_curve 
+from matplotlib.lines import Line2D
+from matplotlib.colors import ListedColormap
 
 
 def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
@@ -81,6 +84,9 @@ def plot_permutation_importance(
     plt.show()
 
 
+
+
+
 def plot_prediction_and_error_map(
     X,
     y_true,
@@ -88,39 +94,138 @@ def plot_prediction_and_error_map(
     feature_x,
     feature_y,
     title_prefix="Model",
-    cmap="viridis",
-    error_cmap="coolwarm",
     s=5,
     alpha=0.5
 ):
-    
-    # FIX: keep full feature matrix
+
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
-    fig, (ax0, ax1, ax2) = plt.subplots(1, 3, figsize=(18, 6))
+    class_names = {
+        0: "Galaxy",
+        1: "Quasar",
+        2: "Star"
+    }
 
-    # Ground truth
-    ax0.scatter(X[feature_x], X[feature_y],
-                c=y_true, cmap=cmap, s=s, alpha=alpha)
+    cmap = ListedColormap([
+        "tab:blue",    # galaxy
+        "tab:orange",  # quasar
+        "tab:green"    # star
+    ])
+
+    fig, (ax0, ax1, ax2) = plt.subplots(
+        1, 3,
+        figsize=(18, 6)
+    )
+
+    # ----------------------
+    # Ground Truth
+    # ----------------------
+
+    ax0.scatter(
+        X[feature_x],
+        X[feature_y],
+        c=y_true,
+        cmap=cmap,
+        s=s,
+        alpha=alpha
+    )
+
     ax0.set_title("Ground Truth")
     ax0.set_xlabel(feature_x)
     ax0.set_ylabel(feature_y)
 
+    # ----------------------
     # Predictions
-    ax1.scatter(X[feature_x], X[feature_y],
-                c=y_pred, cmap=cmap, s=s, alpha=alpha)
+    # ----------------------
+
+    ax1.scatter(
+        X[feature_x],
+        X[feature_y],
+        c=y_pred,
+        cmap=cmap,
+        s=s,
+        alpha=alpha
+    )
+
     ax1.set_title(f"{title_prefix} Predictions")
     ax1.set_xlabel(feature_x)
     ax1.set_ylabel(feature_y)
 
-    # Errors
+    # ----------------------
+    # Error map
+    # ----------------------
+
     errors = np.array(y_pred) != np.array(y_true)
-    ax2.scatter(X[feature_x], X[feature_y],
-                c=errors, cmap=error_cmap, s=s, alpha=alpha)
-    ax2.set_title("Misclassification map")
+
+    ax2.scatter(
+        X[feature_x],
+        X[feature_y],
+        c=errors,
+        cmap="coolwarm",
+        s=s,
+        alpha=alpha
+    )
+    error_legend = [
+    Line2D(
+        [0], [0],
+        marker='o',
+        color='w',
+        label='Correct',
+        markerfacecolor='blue',
+        markersize=8
+    ),
+    Line2D(
+        [0], [0],
+        marker='o',
+        color='w',
+        label='Misclassified',
+        markerfacecolor='red',
+        markersize=8
+    )
+    ]
+
+    ax2.legend( handles=error_legend, title="Prediction")
+    ax2.set_title(f"{title_prefix} Misclassification Map")
     ax2.set_xlabel(feature_x)
     ax2.set_ylabel(feature_y)
+
+    # ----------------------
+    # Legend
+    # ----------------------
+
+    legend_elements = [
+        Line2D(
+            [0],
+            [0],
+            marker='o',
+            color='w',
+            label='Galaxy',
+            markerfacecolor='tab:blue',
+            markersize=8
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker='o',
+            color='w',
+            label='Quasar',
+            markerfacecolor='tab:orange',
+            markersize=8
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker='o',
+            color='w',
+            label='Star',
+            markerfacecolor='tab:green',
+            markersize=8
+        )
+    ]
+
+    ax0.legend(handles=legend_elements, title="Class")
+    ax1.legend(handles=legend_elements, title="Class")
 
     plt.tight_layout()
     plt.show()
@@ -260,6 +365,7 @@ def plot_feature_ablation(
 def plot_feature_importance(
     model,
     feature_names,
+    prefix_name="Model",
 
     # custom importance functions
     importance_functions=None,
@@ -405,7 +511,7 @@ def plot_feature_importance(
         else "Importance"
     )
 
-    plt.title("Feature Importance Comparison")
+    plt.title(f"{prefix_name} Feature Importance Comparison")
 
     plt.legend()
 
