@@ -127,3 +127,40 @@ def run_feature_ablation(
         })
 
     return pd.DataFrame(results)
+
+
+def get_feature_subset_threshold(
+    ablation_results: pd.DataFrame,
+    best_val_f1: float,
+    threshold: float = 0.95,
+):
+    """
+    Return the smallest feature subset whose validation F1
+    reaches the specified fraction of the full-model F1.
+
+    Parameters
+    ----------
+    ablation_results : pd.DataFrame
+        Output of run_feature_ablation().
+    best_val_f1 : float
+        Validation F1 of the best full model.
+    threshold : float
+        Fraction of best_val_f1 to reach (default = 0.95).
+
+    Returns
+    -------
+    pd.Series
+        Row of ablation_results corresponding to the first
+        subset satisfying the threshold.
+    """
+
+    target = threshold * best_val_f1
+
+    valid_rows = ablation_results[
+        ablation_results["val_f1"] >= target
+    ]
+
+    if len(valid_rows) == 0:
+        return None
+
+    return valid_rows.iloc[0]
