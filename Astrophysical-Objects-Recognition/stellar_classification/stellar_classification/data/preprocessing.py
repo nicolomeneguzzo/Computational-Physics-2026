@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 # Metadata columns that carry no predictive signal
 METADATA_COLUMNS = ['run_ID', 'rerun_ID', 'cam_col', 'field_ID', 'spec_obj_ID', 'fiber_ID', 'obj_ID']
+Z= ['redshift']
 
 
 def remove_outliers(df: pd.DataFrame) -> pd.DataFrame:
@@ -76,7 +77,7 @@ def prepare_splits(
     df[target_col] = le.fit_transform(df[target_col])
 
     # ── 2. Drop metadata columns ──────────────────────────────────────────────
-    df.drop(columns=METADATA_COLUMNS, inplace=True, errors='ignore')
+    df.drop(columns=METADATA_COLUMNS+Z, inplace=True, errors='ignore')
 
     # ── 3. (Optional) remove outliers ─────────────────────────────────────────
     if apply_outlier_removal:

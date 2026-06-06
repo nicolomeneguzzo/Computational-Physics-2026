@@ -23,6 +23,7 @@ from .trainer import (  # noqa: F401
     train_traditional,
     train_voting,
     train_neural,
+    train_trees_with_tuning,  #aggiunta enrica
 )
 from .inference.predictor import (  # noqa: F401
     evaluate_test_set,
@@ -33,9 +34,15 @@ from .visualization import (  # noqa: F401
     plot_class_distribution,
     plot_confusion_matrix,
     plot_permutation_importance,
+    plot_feature_ablation,
+    plot_prediction_and_error_map, #sara function
+    plot_misclassified_feature_distributions, #sara function
+    plot_feature_importance, #sara function
+    plot_learning_curve
 )
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
+from .models.trees import SimpleRandomForest, SimpleExtraTrees
 
 __all__ = [
     # data
@@ -45,9 +52,11 @@ __all__ = [
     # inference
     'evaluate_test_set', 'evaluate_neural', 'compute_permutation_importance',
     # visualization
-    'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance',
+    'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance', 
+    'plot_prediction_and_error_map', 'plot_misclassified_feature_distributions', 'plot_feature_importance', #-> funzioni di sara 
+    'plot_feature_ablation', 'plot_learning_curve', #--> aggiunta enrica 
     # utils
     'print_metrics',
     # models
-    'SimpleNN',
+    'SimpleNN','train_trees_with_tuning' #aggiunta enrica 
 ]
