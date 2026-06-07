@@ -50,7 +50,18 @@ def run_feature_ablation(
     best_model_type = best_model_row["model"]
     best_lr = best_model_row["learning_rate"]
 
-    print(f"\nBest model: {best_model_type} | lr={best_lr}")
+    # Se il modello proviene da run_experiments il valore è NaN
+    best_dropout = best_model_row.get("dropout", 0.0)
+
+    if pd.isna(best_dropout):
+        best_dropout = 0.0
+
+    print(
+        f"\nBest model: "
+        f"{best_model_type} | "
+        f"lr={best_lr} | "
+        f"dropout={best_dropout}"
+    )
 
     # ─────────────────────────────────────────────
     # 3. loop over k features
@@ -81,6 +92,7 @@ def run_feature_ablation(
             best_model_type,
             input_size=k,
             num_classes=num_classes,
+            dropout=best_dropout,
         )
 
         # ─────────────────────────────
