@@ -299,7 +299,6 @@ first problem: linearSVC has no native predict_proba
 | Neural Network | - | - | 87.14% | - |
 
 #### Test Metrics
-
 | Model | Accuracy | Precision | Recall | F1 |
 |---|---|---|---|---|
 | Voting Classifier | 90.82% | 0.8817 | 0.8844 | 0.8822 |
@@ -328,6 +327,17 @@ first problem: linearSVC has no native predict_proba
 | **GALAXY** | 9797 | 552 | 432 |
 | **STAR** | 193 | 3135 | 220 |
 | **QUASAR** | 332 | 510 | 3086 |
+
+
+### Tuned Boost ###
+
+#### Training & Validation Metrics
+
+| Model | Train Acc | Train F1 | Val Acc | Val F1 |
+|---|---|---|---|---|
+| Voting Classifier | 98.76% | 0.99 | 90.58% | 0.88 |
+| Stacking Classifier | 100.00% | 1.00 | 90.09% | 0.87 |
+
 
 
 ## GridSearch ##

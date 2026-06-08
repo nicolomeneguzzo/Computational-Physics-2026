@@ -137,8 +137,14 @@ def plot_feature_ablation(
         else:
             # voting/stacking: non possiamo retrainare facilmente,
             # azzeriamo le feature non selezionate invece di sliceare
-            X_test_masked = np.zeros_like(X_test)
-            X_test_masked[:, selected_idx] = X_test[:, selected_idx]
+            X_test_masked = X_test.copy()
+            feature_means = X_train.mean(axis=0)
+            # azzera tutto alla media
+            for j in range(X_test_masked.shape[1]):
+                if j not in selected_idx:
+                    X_test_masked[:, j] = feature_means[j]
+            # X_test_masked = np.zeros_like(X_test)
+            # X_test_masked[:, selected_idx] = X_test[:, selected_idx]
             acc = accuracy_score(y_test, model.predict(X_test_masked)) * 100
 
         accuracies.append(acc)
