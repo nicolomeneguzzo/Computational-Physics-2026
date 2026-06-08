@@ -15,3 +15,4 @@ data/
 *.pth
 *.pkl
 trained_models/
+*.zip
