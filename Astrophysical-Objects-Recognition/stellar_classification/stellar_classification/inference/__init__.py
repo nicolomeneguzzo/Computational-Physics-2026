@@ -5,6 +5,8 @@ from .predictor import (  # noqa: F401
     evaluate_neural,
     compute_permutation_importance,
     compute_shap,
+    shap_summary_tree_model,
+    predict_with_confidence,
 )
 
 __all__ = [
@@ -12,4 +14,6 @@ __all__ = [
     'evaluate_neural',
     'compute_permutation_importance',
     'compute_shap',
+    'shap_summary_tree_model',
+    'predict_with_confidence',
 ]

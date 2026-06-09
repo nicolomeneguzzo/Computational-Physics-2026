@@ -6,6 +6,7 @@ from sklearn.inspection import permutation_importance
 import shap
 import torch
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import matplotlib.pyplot as plt
 
 
 def evaluate_test_set(
@@ -81,3 +82,138 @@ def compute_shap(
     explainer = shap.KernelExplainer(predict_fn, X_train_background[:background_size])
     shap_values = explainer.shap_values(X_test_subset)
     return explainer, shap_values
+
+
+
+
+
+def shap_summary_tree_model(model, X, feature_names, class_names=None, show=True):
+    """
+    Generate SHAP summary plots for tree-based multi-class models.
+
+    Parameters
+    ----------
+    model : fitted tree-based model (e.g., XGBoost, LightGBM)
+    X : array-like or pd.DataFrame
+        Input features (test set)
+    feature_names : list
+        Names of features
+    class_names : list, optional
+        Class labels (from LabelEncoder)
+    show : bool, default=True
+        Whether to display plots
+
+    Returns
+    -------
+    shap_values : computed SHAP values
+    """
+
+    # Ensure DataFrame format
+    X_df = pd.DataFrame(X, columns=feature_names)
+
+    # Create explainer
+    explainer = shap.TreeExplainer(model)
+
+    # Compute SHAP values
+    shap_values = explainer.shap_values(X_df)
+
+    # Class names fallback
+    if class_names is None:
+        class_names = [f"class_{i}" for i in range(len(shap_values[0]))]
+
+    # Plot per class
+    for i, cls in enumerate(class_names):
+        print(f"\nSHAP summary for class: {cls}")
+        shap.summary_plot(shap_values[:, :, i], X_df, show=show)
+
+    return shap_values
+
+
+
+
+def predict_with_confidence(
+    model,
+    X_test,
+    feature_x,
+    feature_y,
+    title_prefix="Model",
+    X_plot=None,
+    threshold=0.9,
+    uncertain_label=-1,
+    plot=True,
+    cmap="viridis",
+):
+    """
+    Predict classes using model.predict_proba() and optionally plot confidence.
+
+    Parameters
+    ----------
+    model : estimator
+        Trained classifier with predict_proba() method.
+    X_test : array-like or DataFrame
+        Input data used for prediction.
+    X_plot : DataFrame, optional
+        Dataset used for plotting. If None, X_test is used.
+    feature_x : str, default="g_r"
+        Column name for x-axis in scatter plot.
+    feature_y : str, default="r_i"
+        Column name for y-axis in scatter plot.
+    threshold : float, default=0.9
+        Confidence threshold below which predictions are marked uncertain.
+    uncertain_label : int, default=-1
+        Label assigned to uncertain predictions.
+    plot : bool, default=True
+        Whether to generate the confidence scatter plot.
+    cmap : str, default="viridis"
+        Colormap for scatter plot.
+
+    Returns
+    -------
+    dict
+        Dictionary containing:
+        - probabilities
+        - confidence
+        - predictions
+        - final_predictions
+    """
+
+    # Predict probabilities
+    probs = model.predict_proba(X_test)
+
+    # Confidence and predicted class
+    confidence = probs.max(axis=1)
+    predictions = probs.argmax(axis=1)
+
+    # Apply threshold
+    final_predictions = np.where(
+        confidence > threshold,
+        predictions,
+        uncertain_label,
+    )
+
+    # Plot
+    if plot:
+        if X_plot is None:
+            X_plot = X_test
+
+        plt.figure(figsize=(8, 6))
+        scatter = plt.scatter(
+            X_plot[feature_x],
+            X_plot[feature_y],
+            c=confidence,
+            cmap=cmap,
+        )
+
+        plt.xlabel(feature_x)
+        plt.ylabel(feature_y)
+        plt.colorbar(scatter, label="Confidence")
+        plt.title(f"{title_prefix} Prediction Confidence")
+        plt.show()
+
+    return {
+        "probabilities": probs,
+        "confidence": confidence,
+        "predictions": predictions,
+        "final_predictions": final_predictions,
+    }
+
