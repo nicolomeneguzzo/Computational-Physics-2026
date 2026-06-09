@@ -146,7 +146,6 @@ def plot_feature_ablation(
             # X_test_masked = np.zeros_like(X_test)
             # X_test_masked[:, selected_idx] = X_test[:, selected_idx]
             acc = accuracy_score(y_test, model.predict(X_test_masked)) * 100
-
         accuracies.append(acc)
 
     standalone = ax is None
@@ -190,7 +189,8 @@ def plot_prediction_and_error_map(
     cmap="viridis",
     error_cmap="coolwarm",
     s=5,
-    alpha=0.5
+    alpha=0.5,
+    save_path: str | None = None
 ):
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -225,6 +225,8 @@ def plot_prediction_and_error_map(
     ax2.set_ylabel(feature_y)
 
     plt.tight_layout()
+    plt.savefig(save_path,
+                dpi=150, bbox_inches='tight')
     plt.show()
 
 #funzione di sara
@@ -237,7 +239,8 @@ def plot_misclassified_feature_distributions(
     color="crimson",
     alpha=0.7,
     figsize=(12, 8),
-    title_prefix="Error"
+    title_prefix="Error",
+    save_path: str | None=None
 ):
     """
     Plot feature distributions for misclassified samples.
@@ -294,6 +297,7 @@ def plot_misclassified_feature_distributions(
         axes[i].grid(alpha=0.2)
 
     plt.tight_layout()
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
     plt.show()    
 
 #feature importance di sara 
@@ -450,7 +454,6 @@ def plot_feature_importance(
     plt.legend()
 
     plt.tight_layout()
-
     plt.show()
     print("\n Feature Importance Scores:") # <- AGGIUNTA ENRICA 
     display(df) # <- AGGIUNTA ENRICA 
