@@ -8,7 +8,7 @@ Quick-start
 ...     evaluate_test_set, evaluate_neural, compute_permutation_importance, shap_summary_tree_model, predict_with_confidence, predict_with_qso_threshold
 ... )
 >>> from stellar_classification.visualization import (
-...     plot_class_distribution, plot_confusion_matrix, plot_permutation_importance, plot_prediction_and_error_map, plot_misclassified_feature_distributions, plot_feature_ablation, plot_feature_importance, plot_learning_curve
+...     plot_class_distribution, plot_confusion_matrix, plot_permutation_importance, plot_prediction_and_error_map, plot_misclassified_feature_distributions, plot_feature_ablation, plot_feature_importance, plot_learning_curve, plot_misclassified_feature_distributions_separated, plot_misclassified_stacked_hist
 ... )
 >>> from stellar_classification.utils.metrics import print_metrics
 """
@@ -43,6 +43,8 @@ from .visualization import (  # noqa: F401
     plot_feature_ablation,
     plot_feature_importance,
     plot_learning_curve,
+    plot_misclassified_feature_distributions_separated,
+    plot_misclassified_stacked_hist
 )
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
@@ -56,7 +58,7 @@ __all__ = [
     'evaluate_test_set', 'evaluate_neural', 'compute_permutation_importance', 'shap_summary_tree_model', 'predict_with_confidence', 'predict_with_qso_threshold',
     # visualization
     'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance','plot_prediction_and_error_map',
-      'plot_misclassified_feature_distributions', 'plot_feature_ablation', 'plot_feature_importance', 'plot_learning_curve',
+      'plot_misclassified_feature_distributions', 'plot_feature_ablation', 'plot_feature_importance', 'plot_learning_curve', 'plot_misclassified_feature_distributions_separated', 'plot_misclassified_stacked_hist',
     # utils
     'print_metrics',
     # models
