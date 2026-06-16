@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 from imblearn.over_sampling import SMOTE
 import torch
 from torch.utils.data import DataLoader, TensorDataset
@@ -37,6 +38,10 @@ def prepare_splits(
     val_ratio: float = 0.25,
     random_state: int = 42,
     apply_outlier_removal: bool = True,
+
+    
+    apply_pca: bool = False,
+    n_components=None,
 ) -> tuple:
     """Encode labels, (optionally) remove outliers, split, scale and apply SMOTE.
 
@@ -100,19 +105,55 @@ def prepare_splits(
         X_tv, y_tv, test_size=val_ratio, random_state=random_state, stratify=y_tv
     )
 
-    # ── 6. Standardize ────────────────────────────────────────────────────────
+    # ── 6. Standardize ─────────────────────────────────────────────
     scaler = StandardScaler()
+
     X_train = scaler.fit_transform(X_train)
     X_val   = scaler.transform(X_val)
     X_test  = scaler.transform(X_test)
 
-    # ── 7. SMOTE on training set ──────────────────────────────────────────────
+    # ── 7. PCA (optional) ──────────────────────────────────────────
+    pca = None
+
+    if apply_pca:
+
+        pca = PCA(n_components=n_components)
+
+        X_train = pca.fit_transform(X_train)
+        X_val   = pca.transform(X_val)
+        X_test  = pca.transform(X_test)
+
+        print("\nPCA ENABLED")
+        print(f"Original features: {len(feature_names)}")
+        print(f"PCA components: {X_train.shape[1]}")
+        print(
+            f"Explained variance: "
+            f"{pca.explained_variance_ratio_.sum() * 100:.2f}%"
+        )
+
+        # rename features
+        feature_names = [
+            f"PC{i+1}" for i in range(X_train.shape[1])
+        ]
+
+    # ── 8. SMOTE on training set ───────────────────────────────────
     smote = SMOTE(random_state=1)
+
     X_train, y_train = smote.fit_resample(X_train, y_train)
 
     gc.collect()
-    return X_train, X_val, X_test, y_train, y_val, y_test, le, scaler, feature_names
-
+    return (
+        X_train,
+        X_val,
+        X_test,
+        y_train,
+        y_val,
+        y_test,
+        le,
+        scaler,
+        feature_names,
+        pca,
+    )
 
 def to_dataloaders(
     X_train: np.ndarray, y_train: np.ndarray,
