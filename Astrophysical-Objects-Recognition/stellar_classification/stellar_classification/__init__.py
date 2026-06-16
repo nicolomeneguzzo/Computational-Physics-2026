@@ -8,7 +8,8 @@ Quick-start
 ...     evaluate_test_set, evaluate_neural, compute_permutation_importance, shap_summary_tree_model, predict_with_confidence
 ... )
 >>> from stellar_classification.visualization import (
-...     plot_class_distribution, plot_confusion_matrix, plot_permutation_importance
+...     plot_class_distribution, plot_confusion_matrix, plot_permutation_importance, 
+...     plot_feature_ablation, plot_learning_curve, plot_prediction_and_error_map, plot_misclassified_feature_distributions
 ... )
 >>> from stellar_classification.utils.metrics import print_metrics
 """
@@ -42,7 +43,9 @@ from .visualization import (  # noqa: F401
     plot_prediction_and_error_map, #sara function
     plot_misclassified_feature_distributions, #sara function
     plot_feature_importance, #sara function
-    plot_learning_curve
+    plot_learning_curve,
+    plot_misclassified_feature_distributions_separated, #sara function
+    plot_misclassified_stacked_hist, #sara function
 )
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
@@ -57,7 +60,7 @@ __all__ = [
     'evaluate_test_set', 'evaluate_neural', 'compute_permutation_importance', 'shap_summary_tree_model', 'predict_with_confidence',
     # visualization
     'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance', 
-    'plot_prediction_and_error_map', 'plot_misclassified_feature_distributions', 'plot_feature_importance', #-> funzioni di sara 
+    'plot_prediction_and_error_map', 'plot_misclassified_feature_distributions', 'plot_feature_importance', 'plot_misclassified_feature_distributions_separated', 'plot_misclassified_stacked_hist', #-> funzioni di sara 
     'plot_feature_ablation', 'plot_learning_curve', #--> aggiunta enrica 
     # utils
     'print_metrics',

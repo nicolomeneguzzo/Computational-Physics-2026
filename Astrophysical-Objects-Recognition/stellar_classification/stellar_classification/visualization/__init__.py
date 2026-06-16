@@ -582,3 +582,170 @@ def plot_learning_curve(
     if standalone:
         plt.tight_layout()
         plt.show()
+
+
+
+
+def plot_misclassified_feature_distributions_separated(
+    X,
+    y_true,
+    y_pred,
+    features,
+    prefix_name="Model",
+    class_names=None,
+    bins=50,
+    figsize=(12,5)
+):
+
+    if class_names is None:
+        class_names = {
+            0: "Galaxy",
+            1: "Quasar",
+            2: "Star"
+        }
+
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
+    for feat in features:
+
+        fig, axes = plt.subplots(1, 3, figsize=figsize, sharey=True)
+
+        for ax, true_cls in zip(axes, np.unique(y_true)):
+
+            other_classes = [c for c in np.unique(y_true)
+                             if c != true_cls]
+
+            colors = ["tab:red", "tab:blue"]
+
+            for pred_cls, col in zip(other_classes, colors):
+
+                mask = (
+                    (y_true == true_cls) &
+                    (y_pred == pred_cls)
+                )
+
+                ax.hist(
+                    X.loc[mask, feat],
+                    bins=bins,
+                    histtype="step",
+                    linewidth=2,
+                    color=col,
+                    label=f"{class_names[true_cls]} → {class_names[pred_cls]}"
+                )
+
+            ax.set_title(f"True = {class_names[true_cls]}")
+            ax.set_xlabel(feat)
+            ax.legend()
+
+        axes[0].set_ylabel("Count")
+
+        fig.suptitle(f"{prefix_name} misclassified objects: {feat}")
+
+        plt.tight_layout()
+        plt.show()
+
+
+
+
+
+
+def plot_misclassified_stacked_hist(
+    X,
+    y_true,
+    y_pred,
+    features,
+    prefix_name="Model",
+    class_names=None,
+    bins=40,
+    figsize=(9, 9),
+    density=False
+):
+
+    import pandas as pd
+
+    if class_names is None:
+        class_names = {
+            0: "Galaxy",
+            1: "Star",
+            2: "Quasar"
+        }
+
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
+    # 6 tipi di errore
+    error_pairs = [
+        (0, 1),  # G→S
+        (1, 0),  # S→G
+        (0, 2),  # G→Q
+        (2, 0),  # Q→G
+        (1, 2),  # S→Q
+        (2, 1),  # Q→S
+    ]
+
+    labels = [
+        "G→S", "S→G",
+        "G→Q", "Q→G",
+        "S→Q", "Q→S"
+    ]
+
+    colors = [
+        "#d62728",  # G→S (rosso)
+        "#ff9896",  # S→G (rosa chiaro)
+
+        "#1f77b4",  # G→Q (blu)
+        "#aec7e8",  # Q→G (azzurro chiaro)
+
+        "#2ca02c",  # S→Q (verde)
+        "#98df8a",  # Q→S (verde chiaro)
+    ]
+
+    n_feat = len(features)
+
+    fig, axes = plt.subplots(
+        n_feat,
+        1,
+        figsize=figsize,
+        sharex=True
+    )
+
+    if n_feat == 1:
+        axes = [axes]
+
+    for ax, feat in zip(axes, features):
+
+        data = []
+
+        for (true_cls, pred_cls) in error_pairs:
+            mask = (y_true == true_cls) & (y_pred == pred_cls)
+            data.append(X.loc[mask, feat])
+
+        ax.hist(
+            data,
+            bins=bins,
+            stacked=True,
+            density=density,
+            color=colors,
+            alpha=0.9,
+            label=labels
+        )
+
+        ax.set_xlabel(feat)
+        ax.grid(alpha=0.25)
+
+    #axes[-1].set_xlabel("Feature value")
+    fig.suptitle(f" {prefix_name} misclassified objects by true class",
+    y=0.98  
+    )
+
+    fig.legend( labels,
+         loc="upper center",
+         ncol=6,
+         frameon=False,
+         bbox_to_anchor=(0.5, 0.94)  
+    )
+    
+
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    plt.show()
