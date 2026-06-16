@@ -101,3 +101,56 @@ def plot_feature_ablation(
     plt.legend()
 
     plt.show()
+
+def plot_pca_ablation(
+    df: pd.DataFrame,
+    best_val_f1: float,
+    title: str = "PCA Ablation Study"
+):
+    """
+    Plot PCA performance vs number of components.
+    """
+
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(10, 6))
+
+    plt.plot(
+        df["n_components"],
+        df["val_f1"],
+        marker="o",
+        label="Validation F1",
+    )
+
+    plt.plot(
+        df["n_components"],
+        df["test_f1"],
+        marker="o",
+        label="Test F1",
+    )
+
+    plt.axhline(
+        y=best_val_f1,
+        color="red",
+        linestyle="--",
+        linewidth=2,
+        label=f"Best Model ({best_val_f1:.4f})"
+    )
+
+    plt.axhline(
+        y=0.95 * best_val_f1,
+        color="orange",
+        linestyle="--",
+        linewidth=2,
+        label=f"95% Threshold ({0.95 * best_val_f1:.4f})"
+    )
+
+    plt.xlabel("Number of PCA Components")
+    plt.ylabel("F1 Score")
+
+    plt.title(title)
+
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
