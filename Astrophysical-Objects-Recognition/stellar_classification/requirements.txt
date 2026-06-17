@@ -9,6 +9,7 @@ imblearn
 torch
 catboost
 lightgbm
+xgboost
 shap
 pyyaml
 tqdm
