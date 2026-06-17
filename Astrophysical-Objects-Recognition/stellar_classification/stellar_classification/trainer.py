@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.ensemble import VotingClassifier
+from sklearn.ensemble import StackingClassifier #nicolò
 from sklearn.metrics import (
     accuracy_score, confusion_matrix, f1_score,
     precision_score, recall_score,
@@ -17,7 +18,9 @@ from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
 from xgboost import XGBClassifier #aggiunta sara
 from sklearn.model_selection import RandomizedSearchCV  #aggiunta enrica 
-from .models.trees import SimpleRandomForest, SimpleExtraTrees   #aggiunta enrica 
+from .models.trees import SimpleRandomForest, SimpleExtraTrees   #aggiunta enrica
+from sklearn.linear_model import LogisticRegression #nicolò
+from sklearn.calibration import CalibratedClassifierCV #nicolò
 
 
 from .models.network import SimpleNN
@@ -101,6 +104,7 @@ def train_voting(
     X_train: np.ndarray, y_train: np.ndarray,
     X_val:   np.ndarray, y_val:   np.ndarray,
     models:  dict | None = None,
+    voting: str | None = None, 
 ) -> VotingClassifier:
     """Build and fit a hard VotingClassifier over all traditional models.
 
@@ -121,13 +125,13 @@ def train_voting(
             return np.asarray(preds).T
 
     estimators = [
-        ('svc',      models['Linear SVC']),
-        ('dt',       models['Decision Tree']),
-        ('rf',       models['Random Forest']),
-        ('catboost', models['CatBoost']),
-        ('lgbm',     models['LightGBM']),
-    ]
-    voting_clf = _Voting(estimators=estimators, voting='hard')
+    ('svc', models['Linear SVC']),
+    ('rf',  models['Random Forest']),
+    ('et',  models['Extra Trees']),
+    ('xgb', models['XGBoost']),
+    ('lgbm', models['LightGBM']),
+]
+    voting_clf = _Voting(estimators=estimators, voting=voting)
     voting_clf.fit(X_train, y_train)
     print("Voting Classifier trained.")
 
@@ -383,3 +387,67 @@ def evaluate_single_model(model, X_train, y_train, X_val, y_val, model_name="Mod
         )
 
     return train_metrics, val_metrics
+
+
+def make_stacking_classifier(
+    models: dict,
+    n_jobs: int = -1,
+    final_estimator=None,
+    passthrough: bool = False,
+    cv: int = 10,  #from the gridsearch
+    stack_method: str = 'predict_proba',
+    ) -> StackingClassifier:
+
+    # Default meta-model
+    if final_estimator is None:
+        final_estimator = LogisticRegression(
+            max_iter=1000
+        )
+
+    estimators = [
+        ('svc',  models['Linear SVC']),
+        ('rf',   models['Random Forest']),
+        ('et',   models['Extra Trees']),
+        ('xgb',  models['XGBoost']),
+        ('lgbm', models['LightGBM']),
+    ]
+
+
+    return StackingClassifier(
+        estimators=estimators,
+        final_estimator=final_estimator,
+        passthrough=passthrough,
+        stack_method=stack_method,
+        cv=cv,
+        n_jobs=n_jobs,
+    )
+
+
+def train_stacking(
+    X_train, y_train,
+    X_val, y_val,
+    models: dict,             # ora obbligatorio, non più opzionale
+    n_jobs: int = -1,
+    final_estimator=None,
+    passthrough: bool = False,
+    cv: int = 10,              # il valore ottimale trovato dal GridSearch
+    stack_method: str = 'predict_proba',
+) -> StackingClassifier:
+    stacking_clf = make_stacking_classifier(
+        models=models,
+        n_jobs=n_jobs,
+        final_estimator=final_estimator,
+        passthrough=passthrough,
+        cv=cv,
+        stack_method=stack_method,
+    )
+    print("Starting stacking training...")
+    stacking_clf.fit(X_train, y_train)
+    print("Stacking Classifier trained.")
+
+    train_m = compute_metrics(y_train, stacking_clf.predict(X_train), 'Training', 'Stacking Classifier')
+    val_m = compute_metrics(y_val, stacking_clf.predict(X_val), 'Validation', 'Stacking Classifier')
+    for m in (train_m, val_m):
+        print(f"  [{m['dataset']}] Acc={m['accuracy']:.2f}%  P={m['precision']:.2f}  R={m['recall']:.2f}  F1={m['f1']:.2f}")
+
+    return stacking_clf

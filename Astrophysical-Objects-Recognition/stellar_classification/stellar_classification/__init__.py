@@ -27,6 +27,8 @@ from .trainer import (  # noqa: F401
     train_trees_with_tuning,  #aggiunta enrica
     tune_model, #aggiunta sara
     evaluate_single_model, #aggiunta sara
+    make_stacking_classifier,
+    train_stacking,
 )
 from .inference.predictor import (  # noqa: F401
     evaluate_test_set,
