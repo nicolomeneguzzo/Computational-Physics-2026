@@ -144,66 +144,121 @@ def train_voting(
 
 # ── Neural Network ────────────────────────────────────────────────────────────
 
+# Aggiunta Ettore
+
 def train_neural(
+    model,
     train_loader: torch.utils.data.DataLoader,
-    val_loader:   torch.utils.data.DataLoader,
-    input_size:   int,
-    num_classes:  int,
-    num_epochs:   int = 10,
-    lr:           float = 0.001,
-) -> SimpleNN:
-    """Train the PyTorch neural network and return the fitted model.
+    val_loader: torch.utils.data.DataLoader,
+    lr: float = 0.001,
+    num_epochs: int = 10,
+):
+    """Train a given PyTorch model and return training history."""
 
-    Parameters
-    ----------
-    train_loader, val_loader : DataLoader
-        PyTorch data loaders produced by :func:`~.data.preprocessing.to_dataloaders`.
-    input_size : int
-        Number of input features.
-    num_classes : int
-        Number of target classes.
-    num_epochs : int
-        Training epochs.
-    lr : float
-        Adam learning rate.
+    import torch
+    import torch.nn as nn
 
-    Returns
-    -------
-    model : SimpleNN
-        Trained model in eval mode.
-    """
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model  = SimpleNN(input_size, num_classes).to(device)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    # ────────────────────────────────────────────────────────────────────────
+    # Training history
+    # ────────────────────────────────────────────────────────────────────────
+
+    history = {
+        "train_loss": [],
+        "train_accuracy": [],
+        "val_accuracy": [],
+    }
+
+    # ────────────────────────────────────────────────────────────────────────
+    # Training loop
+    # ────────────────────────────────────────────────────────────────────────
+
     for epoch in range(num_epochs):
+
+        # ── TRAIN ───────────────────────────────────────────────────────────
         model.train()
+
         running_loss = 0.0
+        correct_train = 0
+        total_train = 0
+
         for X_batch, y_batch in train_loader:
-            X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+
+            X_batch = X_batch.to(device)
+            y_batch = y_batch.to(device)
+
             optimizer.zero_grad(set_to_none=True)
-            loss = criterion(model(X_batch), y_batch)
+
+            outputs = model(X_batch)
+
+            loss = criterion(outputs, y_batch)
+
             loss.backward()
             optimizer.step()
+
             running_loss += loss.item()
 
-        # Validation accuracy
-        model.eval()
-        correct = total = 0
-        with torch.no_grad():
-            for Xb, yb in val_loader:
-                Xb, yb = Xb.to(device), yb.to(device)
-                _, pred = model(Xb).max(1)
-                correct += (pred == yb).sum().item()
-                total   += yb.size(0)
+            # predictions
+            _, pred = outputs.max(1)
 
+            correct_train += (pred == y_batch).sum().item()
+            total_train += y_batch.size(0)
+
+        # ── TRAIN METRICS ───────────────────────────────────────────────────
         avg_loss = running_loss / len(train_loader)
-        val_acc  = 100 * correct / total
-        print(f"Epoch {epoch+1:>2}/{num_epochs}  loss={avg_loss:.4f}  val_acc={val_acc:.2f}%")
+        train_acc = 100 * correct_train / total_train
 
-    gc.collect()
-    return model
+        # ── VALIDATION ──────────────────────────────────────────────────────
+        model.eval()
+
+        correct_val = 0
+        total_val = 0
+
+        with torch.no_grad():
+
+            for Xb, yb in val_loader:
+
+                Xb = Xb.to(device)
+                yb = yb.to(device)
+
+                outputs = model(Xb)
+
+                _, pred = outputs.max(1)
+
+                correct_val += (pred == yb).sum().item()
+                total_val += yb.size(0)
+
+        val_acc = 100 * correct_val / total_val
+
+        # ── SAVE HISTORY ────────────────────────────────────────────────────
+        history["train_loss"].append(avg_loss)
+        history["train_accuracy"].append(train_acc)
+        history["val_accuracy"].append(val_acc)
+
+        # ── LOGGING ─────────────────────────────────────────────────────────
+        print(
+            f"Epoch {epoch+1}/{num_epochs} | "
+            f"loss={avg_loss:.4f} | "
+            f"train_acc={train_acc:.2f}% | "
+            f"val_acc={val_acc:.2f}%"
+        )
+
+    # ────────────────────────────────────────────────────────────────────────
+    # Final metrics
+    # ────────────────────────────────────────────────────────────────────────
+
+    final_metrics = {
+        "final_loss": history["train_loss"][-1],
+        "final_train_acc": history["train_accuracy"][-1],
+        "final_val_acc": history["val_accuracy"][-1],
+    }
+
+    return model, history, final_metrics
 
 ####### parte aggiunta da enrica ##########
 def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):

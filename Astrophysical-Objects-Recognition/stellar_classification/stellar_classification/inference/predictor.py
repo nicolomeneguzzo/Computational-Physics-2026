@@ -57,15 +57,37 @@ def compute_permutation_importance(
     X_test,
     y_test,
     feature_names,
-    n_repeats: int = 10,
+    n_jobs,
+    n_repeats: int = 5,
     random_state: int = 42,
-) -> pd.DataFrame:
-    """Compute permutation importance and return sorted DataFrame."""
-    result = permutation_importance(
-        model, X_test, y_test, n_repeats=n_repeats, random_state=random_state, n_jobs=2 
-    )
-    imp = pd.Series(result.importances_mean, index=feature_names).sort_values(ascending=False)
-    return imp
+    batch_size: int=4000
+) -> pd.Series:
+    """Compute permutation importance and return sorted Series."""
+
+    all_importances = []
+
+    for ind, i in enumerate(range(0, len(X_test), batch_size)):
+        X_batch = X_test[i:i+batch_size]
+        y_batch = y_test[i:i+batch_size]
+
+
+        print(f"{ind+1} batch shape: {len(X_batch)}")
+
+        #calcoliamo l'importanza media di ogni batch
+        result = permutation_importance(
+            model,
+            X_batch,
+            y_batch,
+            n_repeats=n_repeats,
+            random_state=random_state,
+            n_jobs=n_jobs  
+        )
+        all_importances.append(result.importances_mean)
+
+    #media tra i batch
+    mean_imp = np.mean(all_importances, axis=0)
+
+    return pd.Series(mean_imp, index=feature_names).sort_values(ascending=False)
 
 
 def compute_shap(
