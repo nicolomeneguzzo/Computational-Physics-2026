@@ -12,3 +12,8 @@ CLAUDE.md
 data/
 */notebooks/catboost_info
 *.csv
+*.pk1
+*.pth
+*.pkl
+trained_models/
+*.zip
