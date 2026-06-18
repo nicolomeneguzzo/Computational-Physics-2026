@@ -329,10 +329,6 @@ def plot_misclassified_feature_distributions(
         Prefix for subplot titles
     """
 
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-
     # Ensure DataFrame
     if not isinstance(X, pd.DataFrame):
         raise ValueError("X must be a pandas DataFrame with named features")

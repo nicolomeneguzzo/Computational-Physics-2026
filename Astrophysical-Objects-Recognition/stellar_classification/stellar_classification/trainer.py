@@ -91,8 +91,8 @@ def train_traditional(
 
         for m in (train_metrics, val_metrics):
             print(
-                f"  [{m['dataset']}] Acc={m['accuracy']:.2f}%  "
-                f"P={m['precision']:.2f}  R={m['recall']:.2f}  F1={m['f1']:.2f}"
+                f"  [{m['dataset']}] Acc={m['accuracy']:.4f}%  "
+                f"P={m['precision']:.4f}  R={m['recall']:.4f}  F1={m['f1']:.4f }"
             )
 
         gc.collect()
@@ -139,8 +139,8 @@ def train_voting(
     val_m   = compute_metrics(y_val,   voting_clf.predict(X_val),   'Validation', 'Voting Classifier')
     for m in (train_m, val_m):
         print(
-            f"  [{m['dataset']}] Acc={m['accuracy']:.2f}%  "
-            f"P={m['precision']:.2f}  R={m['recall']:.2f}  F1={m['f1']:.2f}"
+            f"  [{m['dataset']}] Acc={m['accuracy']:.4f}%  "
+            f"P={m['precision']:.4f}  R={m['recall']:.4f}  F1={m['f1']:.4f}"
         )
 
     return voting_clf
@@ -268,8 +268,8 @@ def train_neural(
 def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
     """RF e ET con hyperparameter tuning via RandomizedSearchCV."""
     param_dist_rf= {
-        'n_estimators':      [50, 100, 150, 200, 500],
-        'max_depth':         [5, 10, 15, 20, None],
+        'n_estimators':      [50, 100, 150, 200, 300],
+        'max_depth':         [5, 10, 15, 20, 25],
         'min_samples_split': [2, 5, 10, 20],
         'min_samples_leaf':  [1, 2, 4],
         'max_features':      ['log2', 0.5, 'sqrt', None],
@@ -277,8 +277,8 @@ def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
     
     }
     param_dist_et = {
-        'n_estimators':      [50, 100, 150, 200, 300, 500],
-        'max_depth':         [5, 10, 15, 20, None],
+        'n_estimators':      [50, 100, 150, 200, 300],
+        'max_depth':         [5, 10, 15, 20, 25],
         'min_samples_split': [2, 5, 10, 20],
         'min_samples_leaf':  [1, 2, 4],
         'max_features':      ['sqrt', 'log2', 0.5]
@@ -287,13 +287,14 @@ def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
     for name, base, param_dist in [('Random Forest', SimpleRandomForest(), param_dist_rf),
                        ('Extra Trees',   SimpleExtraTrees(), param_dist_et)]:
         tuner = RandomizedSearchCV(base, param_dist, n_iter=n_iter,
-                                   cv=cv, scoring='accuracy', n_jobs=2)
+                                   cv=cv, scoring='f1_macro', n_jobs=3)
         tuner.fit(X_train, y_train)
         models[name] = tuner.best_estimator_
         print(f"{name} best params: {tuner.best_params_}")
         for X, y, split in [(X_train, y_train, 'Train'), (X_val, y_val, 'Val')]:
             m = compute_metrics(y, models[name].predict(X), split, name)
-            print(f"  [{split}] Acc={m['accuracy']:.2f}%  F1={m['f1']:.4f}")
+            print(f"Acc={m['accuracy']:.4f} P={m['precision']:.4f} R={m['recall']:.4f} F1={m['f1']:.4f}"
+            f"\nConfusion Matrix:\n{m['confusion_matrix']}\n")
     return models
 
 
@@ -448,6 +449,6 @@ def train_stacking(
     train_m = compute_metrics(y_train, stacking_clf.predict(X_train), 'Training', 'Stacking Classifier')
     val_m = compute_metrics(y_val, stacking_clf.predict(X_val), 'Validation', 'Stacking Classifier')
     for m in (train_m, val_m):
-        print(f"  [{m['dataset']}] Acc={m['accuracy']:.2f}%  P={m['precision']:.2f}  R={m['recall']:.2f}  F1={m['f1']:.2f}")
+        print(f"  [{m['dataset']}] Acc={m['accuracy']:.4f}%  P={m['precision']:.4f}  R={m['recall']:.4f}  F1={m['f1']:.4f}")
 
     return stacking_clf
