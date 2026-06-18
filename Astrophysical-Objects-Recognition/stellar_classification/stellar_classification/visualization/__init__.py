@@ -8,6 +8,8 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import learning_curve #<- aggiunta
 from matplotlib.lines import Line2D #sara aggiunta
 from matplotlib.colors import ListedColormap #sara aggiunta
+from sklearn.metrics import f1_score
+
 
 
 
@@ -102,7 +104,7 @@ def plot_feature_ablation(
     title: str = 'Feature Ablation',
     ax=None,
 ) -> None:
-    """Plot accuracy vs number of features used, from most to least important.
+    """Plot F1 Macro-score vs number of features used, from most to least important.
     
     Parameters
     ----------
@@ -119,29 +121,86 @@ def plot_feature_ablation(
     ax : matplotlib Axes, optional
         If provided, draws on existing axes. Otherwise creates a new figure.
     """
-    from sklearn.metrics import accuracy_score
 
-    imp_order = pd.Series(model.feature_importances_,
-                          index=feature_names).sort_values(ascending=False).index.tolist()
-    accuracies = []
+    # =====================================================
+    # Rank features according to their importance
+    # =====================================================
+
+    imp_order = pd.Series(
+        model.feature_importances_,
+        index=feature_names
+    ).sort_values(
+        ascending=False
+    ).index.tolist()
+
+
+    # =====================================================
+    # Train models using an increasing number of features
+    # selected from the most to the least important ones
+    # =====================================================
+
+    f1_scores = []
+
     for i in range(1, len(imp_order) + 1):
-        selected_idx = [list(feature_names).index(f) for f in imp_order[:i]]
-        m = model.__class__(**model.get_params())
-        m.fit(X_train[:, selected_idx], y_train)
-        acc = accuracy_score(y_test, m.predict(X_test[:, selected_idx])) * 100
-        accuracies.append(acc)
+
+        # Select the first i most important features
+        selected_idx = [
+            list(feature_names).index(f)
+            for f in imp_order[:i]
+        ]
+
+        # Create a new model with the same hyperparameters
+        m = model.__class__(
+            **model.get_params()
+        )
+
+        # Train model using only selected features
+        m.fit(
+            X_train[:, selected_idx],
+            y_train
+        )
+
+        # Evaluate using macro-averaged F1-score
+        f1 = f1_score(
+            y_test,
+            m.predict(X_test[:, selected_idx]),
+            average='macro'
+        )
+
+        f1_scores.append(f1)
+
+
+    # =====================================================
+    # Plot
+    # =====================================================
 
     standalone = ax is None
-    if standalone:
-        fig, ax = plt.subplots(figsize=(8, 5))
 
-    ax.plot(range(1, len(imp_order) + 1), accuracies, marker='o')
-    ax.axhline(y=accuracies[-1], color='r', linestyle='--',
-               label=f'Full accuracy: {accuracies[-1]:.1f}%')
-    ax.set_xlabel('N° features used (most to least important)')
-    ax.set_ylabel('Test Accuracy (%)')
+    if standalone:
+        fig, ax = plt.subplots(
+            figsize=(8, 5)
+        )
+
+
+    ax.plot(
+        range(1, len(imp_order) + 1),
+        f1_scores,
+        marker='o'
+    )
+
+
+    ax.axhline(
+        y=f1_scores[-1],
+        color='r',
+        linestyle='--',
+        label=f'Full F1 Macro: {f1_scores[-1]:.3f}'
+    )
+
+    ax.set_xlabel('N° features used (most to least important)' )
+    ax.set_ylabel('Test F1 Macro-score' )
     ax.set_title(title)
     ax.legend()
+
 
     if standalone:
         plt.tight_layout()
@@ -531,26 +590,13 @@ def plot_learning_curve(
     n_points: int = 10,
     ax=None,
 ) -> None:
-    """Plot training and validation accuracy vs training set size.
 
-    Parameters
-    ----------
-    model : unfitted sklearn estimator
-        Fresh model with desired hyperparameters.
-    X_train, y_train : np.ndarray
-        Training data.
-    title : str
-        Plot title.
-    cv : int
-        Number of cross-validation folds.
-    n_points : int
-        Number of points on the curve.
-    ax : matplotlib Axes, optional
-        If provided, draws on existing axes.
-    """
     train_sizes, train_scores, val_scores = learning_curve(
-        model, X_train, y_train,
-        cv=cv, scoring='accuracy',
+        model,
+        X_train,
+        y_train,
+        cv=cv,
+        scoring='f1_macro',
         train_sizes=np.linspace(0.1, 1.0, n_points),
         n_jobs=-1
     )
@@ -561,19 +607,43 @@ def plot_learning_curve(
     val_std    = val_scores.std(axis=1)
 
     standalone = ax is None
+
     if standalone:
         fig, ax = plt.subplots(figsize=(10, 5))
 
-    ax.plot(train_sizes, train_mean, label='Training', marker='o')
-    ax.plot(train_sizes, val_mean,   label='Validation', marker='o')
-    ax.fill_between(train_sizes, train_mean - train_std,
-                    train_mean + train_std, alpha=0.2)
-    ax.fill_between(train_sizes, val_mean - val_std,
-                    val_mean + val_std, alpha=0.2)
+    ax.plot(
+        train_sizes,
+        train_mean,
+        label='Training F1',
+        marker='o'
+    )
+
+    ax.plot(
+        train_sizes,
+        val_mean,
+        label='Validation F1',
+        marker='o'
+    )
+
+    ax.fill_between(
+        train_sizes,
+        train_mean - train_std,
+        train_mean + train_std,
+        alpha=0.2
+    )
+
+    ax.fill_between(
+        train_sizes,
+        val_mean - val_std,
+        val_mean + val_std,
+        alpha=0.2
+    )
+
     ax.set_xlabel('Training set size')
-    ax.set_ylabel('Accuracy')
+    ax.set_ylabel('F1 Macro-score')
     ax.set_title(title)
     ax.legend()
+    ax.grid(alpha=0.3)
 
     if standalone:
         plt.tight_layout()

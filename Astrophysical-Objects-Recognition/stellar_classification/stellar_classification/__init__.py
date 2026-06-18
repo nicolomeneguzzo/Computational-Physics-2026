@@ -12,6 +12,16 @@ Quick-start
 ...     plot_feature_ablation, plot_learning_curve, plot_prediction_and_error_map, plot_misclassified_feature_distributions
 ... )
 >>> from stellar_classification.utils.metrics import print_metrics
+>>> from stellar_classification.models.network import SimpleNN
+>>> from stellar_classification.models.trees import SimpleRandomForest, SimpleExtraTrees
+>>> from stellar_classification.experiments.nn_runner import run_experiments, device
+>>> from stellar_classification.visualization.nn_plots import plot_training_history, plot_dropout_comparison
+>>> from stellar_classification.visualization.model_selection import get_final_candidates, plot_feature_ablation_nn, plot_pca_ablation
+>>> from stellar_classification.utils.wrapper import TorchModelWrapper
+>>> from stellar_classification.experiments.feature_ablation import run_feature_ablation, get_feature_subset_threshold
+>>> from stellar_classification.experiments.pca_ablation import   plot_explained_variance,run_pca_ablation
+
+
 """
 
 from .data.preprocessing import (  # noqa: F401
@@ -52,20 +62,49 @@ from .visualization import (  # noqa: F401
 from .utils.metrics import print_metrics  # noqa: F401
 from .models.network import SimpleNN     # noqa: F401
 from .models.trees import SimpleRandomForest, SimpleExtraTrees
+from .experiments.nn_runner import run_experiments, device
+from .visualization.nn_plots import plot_training_history, plot_dropout_comparison
+from .visualization.model_selection import get_final_candidates, plot_feature_ablation_nn, plot_pca_ablation
+from .utils.wrapper import TorchModelWrapper
+from .experiments.feature_ablation import run_feature_ablation, get_feature_subset_threshold
+from .experiments.pca_ablation import plot_explained_variance, run_pca_ablation
 
-__all__ = [
+
+___all__ = [
     # data
     'remove_outliers', 'prepare_splits', 'to_dataloaders',
+
     # training
-    'compute_metrics', 'train_traditional', 'train_voting', 'train_neural', 'tune_model', 'train_trees_with_tuning', 'evaluate_single_model',
+    'compute_metrics', 'train_traditional', 'train_voting',
+    'train_neural', 'tune_model',
+    'train_trees_with_tuning', 'evaluate_single_model',
+
     # inference
-    'evaluate_test_set', 'evaluate_neural', 'compute_permutation_importance', 'shap_summary_tree_model', 'predict_with_confidence',
+    'evaluate_test_set', 'evaluate_neural',
+    'compute_permutation_importance',
+    'shap_summary_tree_model', 'predict_with_confidence',
+
     # visualization
-    'plot_class_distribution', 'plot_confusion_matrix', 'plot_permutation_importance', 
-    'plot_prediction_and_error_map', 'plot_misclassified_feature_distributions', 'plot_feature_importance', 'plot_misclassified_feature_distributions_separated', 'plot_misclassified_stacked_hist', #-> funzioni di sara 
-    'plot_feature_ablation', 'plot_learning_curve', #--> aggiunta enrica 
+    'plot_class_distribution', 'plot_confusion_matrix',
+    'plot_permutation_importance',
+    'plot_prediction_and_error_map',
+    'plot_misclassified_feature_distributions',
+    'plot_feature_importance',
+    'plot_misclassified_feature_distributions_separated',
+    'plot_misclassified_stacked_hist',
+    'plot_feature_ablation', 'plot_learning_curve',
+    'plot_pca_ablation',
+
     # utils
     'print_metrics',
+
     # models
-    'SimpleNN','train_trees_with_tuning', 'evaluate_single_model' #aggiunta enrica e sara
+    'SimpleNN', 'SimpleRandomForest', 'SimpleExtraTrees',
+
+    # experiments
+    'run_experiments', 'device',
+    'plot_training_history', 'plot_dropout_comparison',
+    'get_final_candidates', 'plot_feature_ablation_nn',
+    'run_feature_ablation', 'get_feature_subset_threshold',
+    'plot_explained_variance', 'run_pca_ablation',
 ]

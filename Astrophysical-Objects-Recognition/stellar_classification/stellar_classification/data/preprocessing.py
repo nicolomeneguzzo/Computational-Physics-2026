@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 # Metadata columns that carry no predictive signal
-METADATA_COLUMNS = ['run_ID', 'rerun_ID', 'cam_col', 'field_ID', 'spec_obj_ID', 'fiber_ID', 'obj_ID']
+METADATA_COLUMNS = ['run_ID', 'rerun_ID', 'cam_col', 'field_ID', 'spec_obj_ID', 'fiber_ID', 'obj_ID','plate_ID', 'mjd', 'class_num','alpha', 'delta']
 Z= ['redshift']
 
 
