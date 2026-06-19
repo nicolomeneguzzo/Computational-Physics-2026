@@ -62,34 +62,20 @@ def plot_feature_ablation(
         label="Validation F1"
     )
 
-    plt.plot(
-        df["n_features"],
-        df["test_f1"],
-        marker="o",
-        label="Test F1"
-    )
+    
 
     # ─────────────────────────────
     # Baseline (best model)
     # ─────────────────────────────
     plt.axhline(
         y=best_val_f1,
-        color="red",
+        color="orange",
         linestyle="--",
         linewidth=2,
         label=f"Best Model F1 ({best_val_f1:.4f})"
     )
 
-    # ─────────────────────────────
-    # 95% threshold
-    # ─────────────────────────────
-    plt.axhline(
-        y=0.95 * best_val_f1,
-        color="orange",
-        linestyle="--",
-        linewidth=2,
-        label=f"95% of Best F1 ({0.95 * best_val_f1:.4f})"
-    )
+   
 
     # ─────────────────────────────
     # Labels
@@ -122,28 +108,16 @@ def plot_pca_ablation(
         label="Validation F1",
     )
 
-    plt.plot(
-        df["n_components"],
-        df["test_f1"],
-        marker="o",
-        label="Test F1",
-    )
 
     plt.axhline(
         y=best_val_f1,
-        color="red",
+        color="orange",
         linestyle="--",
         linewidth=2,
         label=f"Best Model ({best_val_f1:.4f})"
     )
 
-    plt.axhline(
-        y=0.95 * best_val_f1,
-        color="orange",
-        linestyle="--",
-        linewidth=2,
-        label=f"95% Threshold ({0.95 * best_val_f1:.4f})"
-    )
+
 
     plt.xlabel("Number of PCA Components")
     plt.ylabel("F1 Score")
