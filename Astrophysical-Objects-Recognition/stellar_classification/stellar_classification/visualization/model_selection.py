@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 def get_final_candidates(results_df, dropout_results, top_k: int = 3, sort_by: str = "val_f1"):
     """
     Combine best models from base training and dropout experiments
@@ -38,7 +39,7 @@ def get_final_candidates(results_df, dropout_results, top_k: int = 3, sort_by: s
     return final_sorted
 
 
-import matplotlib.pyplot as plt
+
 
 def plot_feature_ablation_nn(
     df: pd.DataFrame,
@@ -52,21 +53,15 @@ def plot_feature_ablation_nn(
 
     plt.figure(figsize=(10, 6))
 
-    # ─────────────────────────────
     # Curves
-    # ─────────────────────────────
     plt.plot(
         df["n_features"],
         df["val_f1"],
         marker="o",
         label="Validation F1"
     )
-
     
-
-    # ─────────────────────────────
     # Baseline (best model)
-    # ─────────────────────────────
     plt.axhline(
         y=best_val_f1,
         color="orange",
@@ -74,12 +69,8 @@ def plot_feature_ablation_nn(
         linewidth=2,
         label=f"Best Model F1 ({best_val_f1:.4f})"
     )
-
    
-
-    # ─────────────────────────────
     # Labels
-    # ─────────────────────────────
     plt.xlabel("Number of Features")
     plt.ylabel("F1 Score")
     plt.title(title)
@@ -87,6 +78,9 @@ def plot_feature_ablation_nn(
     plt.legend()
 
     plt.show()
+
+
+
 
 def plot_pca_ablation(
     df: pd.DataFrame,
@@ -97,8 +91,6 @@ def plot_pca_ablation(
     Plot PCA performance vs number of components.
     """
 
-    import matplotlib.pyplot as plt
-
     plt.figure(figsize=(10, 6))
 
     plt.plot(
@@ -108,7 +100,6 @@ def plot_pca_ablation(
         label="Validation F1",
     )
 
-
     plt.axhline(
         y=best_val_f1,
         color="orange",
@@ -117,14 +108,9 @@ def plot_pca_ablation(
         label=f"Best Model ({best_val_f1:.4f})"
     )
 
-
-
     plt.xlabel("Number of PCA Components")
     plt.ylabel("F1 Score")
-
     plt.title(title)
-
     plt.grid(True)
     plt.legend()
-
     plt.show()

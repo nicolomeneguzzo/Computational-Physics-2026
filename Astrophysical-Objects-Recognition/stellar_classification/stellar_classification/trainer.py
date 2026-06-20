@@ -26,8 +26,7 @@ from sklearn.calibration import CalibratedClassifierCV #nicolò
 from .models.network import SimpleNN
 
 
-# ── Model factory ─────────────────────────────────────────────────────────────
-
+# Model factory 
 def _make_models() -> dict:
     """Return a fresh dict of unfitted estimators."""
     use_gpu = torch.cuda.is_available()
@@ -44,8 +43,8 @@ def _make_models() -> dict:
     }
 
 
-# ── Metrics helper ────────────────────────────────────────────────────────────
 
+#  Metrics helper 
 def compute_metrics(y_true, y_pred, dataset_name: str, model_name: str) -> dict:
     """Compute classification metrics and return as a dict.
 
@@ -62,8 +61,8 @@ def compute_metrics(y_true, y_pred, dataset_name: str, model_name: str) -> dict:
     }
 
 
-# ── Traditional ML ────────────────────────────────────────────────────────────
 
+#  Traditional ML 
 def train_traditional(
     X_train: np.ndarray, y_train: np.ndarray,
     X_val:   np.ndarray, y_val:   np.ndarray,
@@ -98,6 +97,8 @@ def train_traditional(
         gc.collect()
 
     return models
+
+
 
 
 def train_voting(
@@ -146,10 +147,8 @@ def train_voting(
     return voting_clf
 
 
-# ── Neural Network ────────────────────────────────────────────────────────────
 
-# Aggiunta Ettore
-
+#  Neural Network 
 def train_neural(
     model,
     train_loader: torch.utils.data.DataLoader,
@@ -168,23 +167,17 @@ def train_neural(
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    # ────────────────────────────────────────────────────────────────────────
     # Training history
-    # ────────────────────────────────────────────────────────────────────────
-
     history = {
         "train_loss": [],
         "train_accuracy": [],
         "val_accuracy": [],
     }
 
-    # ────────────────────────────────────────────────────────────────────────
     # Training loop
-    # ────────────────────────────────────────────────────────────────────────
-
     for epoch in range(num_epochs):
 
-        # ── TRAIN ───────────────────────────────────────────────────────────
+        #  TRAIN 
         model.train()
 
         running_loss = 0.0
@@ -213,11 +206,11 @@ def train_neural(
             correct_train += (pred == y_batch).sum().item()
             total_train += y_batch.size(0)
 
-        # ── TRAIN METRICS ───────────────────────────────────────────────────
+        #  TRAIN METRICS 
         avg_loss = running_loss / len(train_loader)
         train_acc = 100 * correct_train / total_train
 
-        # ── VALIDATION ──────────────────────────────────────────────────────
+        # VALIDATION 
         model.eval()
 
         correct_val = 0
@@ -239,12 +232,12 @@ def train_neural(
 
         val_acc = 100 * correct_val / total_val
 
-        # ── SAVE HISTORY ────────────────────────────────────────────────────
+        #SAVE HISTORY 
         history["train_loss"].append(avg_loss)
         history["train_accuracy"].append(train_acc)
         history["val_accuracy"].append(val_acc)
 
-        # ── LOGGING ─────────────────────────────────────────────────────────
+        # LOGGING 
         print(
             f"Epoch {epoch+1}/{num_epochs} | "
             f"loss={avg_loss:.4f} | "
@@ -252,10 +245,7 @@ def train_neural(
             f"val_acc={val_acc:.2f}%"
         )
 
-    # ────────────────────────────────────────────────────────────────────────
     # Final metrics
-    # ────────────────────────────────────────────────────────────────────────
-
     final_metrics = {
         "final_loss": history["train_loss"][-1],
         "final_train_acc": history["train_accuracy"][-1],
@@ -264,7 +254,10 @@ def train_neural(
 
     return model, history, final_metrics
 
-####### parte aggiunta da enrica ##########
+
+
+
+
 def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
     """RF e ET con hyperparameter tuning via RandomizedSearchCV."""
     param_dist_rf= {
@@ -300,7 +293,6 @@ def train_trees_with_tuning(X_train, y_train, X_val, y_val, n_iter=10, cv=5):
 
 
 
-#aggiunta sara
 def tune_model(
     model,
     param_grid: dict,
@@ -369,6 +361,7 @@ def tune_model(
 
 
 
+
 def evaluate_single_model(model, X_train, y_train, X_val, y_val, model_name="Model"):
     """
     Train (already fitted model assumed) + compute all metrics on train/val.
@@ -388,6 +381,8 @@ def evaluate_single_model(model, X_train, y_train, X_val, y_val, model_name="Mod
         )
 
     return train_metrics, val_metrics
+
+
 
 
 def make_stacking_classifier(
@@ -424,14 +419,16 @@ def make_stacking_classifier(
     )
 
 
+
+
 def train_stacking(
     X_train, y_train,
     X_val, y_val,
-    models: dict,             # ora obbligatorio, non più opzionale
+    models: dict,            
     n_jobs: int = -1,
     final_estimator=None,
     passthrough: bool = False,
-    cv: int = 10,              # il valore ottimale trovato dal GridSearch
+    cv: int = 10,              # optimal value founded from GridSearch
     stack_method: str = 'predict_proba',
 ) -> StackingClassifier:
     stacking_clf = make_stacking_classifier(

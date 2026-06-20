@@ -5,9 +5,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.inspection import permutation_importance
-from sklearn.model_selection import learning_curve #<- aggiunta
-from matplotlib.lines import Line2D #sara aggiunta
-from matplotlib.colors import ListedColormap #sara aggiunta
+from sklearn.model_selection import learning_curve 
+from matplotlib.lines import Line2D 
+from matplotlib.colors import ListedColormap 
 from sklearn.metrics import f1_score
 
 
@@ -31,6 +31,8 @@ def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
     ax.set_ylabel('Count')
     plt.tight_layout()
     plt.show()
+
+
 
 
 def plot_confusion_matrix(cm, class_names=None, title: str = 'Confusion Matrix') -> None:
@@ -58,7 +60,9 @@ def plot_confusion_matrix(cm, class_names=None, title: str = 'Confusion Matrix')
     plt.tight_layout()
     plt.show()
 
-#funzione modificata da enrica 
+
+
+
 def plot_permutation_importance(
     imp: pd.Series,
     top_n: int = 10,
@@ -92,7 +96,7 @@ def plot_permutation_importance(
         plt.show()
 
 
-#feature ablation ( enrica ) 
+
 
 def plot_feature_ablation(
     model,
@@ -122,9 +126,7 @@ def plot_feature_ablation(
         If provided, draws on existing axes. Otherwise creates a new figure.
     """
 
-    # =====================================================
     # Rank features according to their importance
-    # =====================================================
 
     imp_order = pd.Series(
         model.feature_importances_,
@@ -133,12 +135,8 @@ def plot_feature_ablation(
         ascending=False
     ).index.tolist()
 
-
-    # =====================================================
     # Train models using an increasing number of features
     # selected from the most to the least important ones
-    # =====================================================
-
     f1_scores = []
 
     for i in range(1, len(imp_order) + 1):
@@ -170,10 +168,7 @@ def plot_feature_ablation(
         f1_scores.append(f1)
 
 
-    # =====================================================
     # Plot
-    # =====================================================
-
     standalone = ax is None
 
     if standalone:
@@ -181,13 +176,11 @@ def plot_feature_ablation(
             figsize=(8, 5)
         )
 
-
     ax.plot(
         range(1, len(imp_order) + 1),
         f1_scores,
         marker='o'
     )
-
 
     ax.axhline(
         y=f1_scores[-1],
@@ -206,7 +199,10 @@ def plot_feature_ablation(
         plt.tight_layout()
         plt.show()
 
-#funzione di sara 
+
+
+
+
 def plot_prediction_and_error_map(
     X,
     y_true,
@@ -238,10 +234,7 @@ def plot_prediction_and_error_map(
         figsize=(18, 6)
     )
 
-    # ----------------------
     # Ground Truth
-    # ----------------------
-
     ax0.scatter(
         X[feature_x],
         X[feature_y],
@@ -255,10 +248,7 @@ def plot_prediction_and_error_map(
     ax0.set_xlabel(feature_x)
     ax0.set_ylabel(feature_y)
 
-    # ----------------------
     # Predictions
-    # ----------------------
-
     ax1.scatter(
         X[feature_x],
         X[feature_y],
@@ -272,10 +262,7 @@ def plot_prediction_and_error_map(
     ax1.set_xlabel(feature_x)
     ax1.set_ylabel(feature_y)
 
-    # ----------------------
     # Error map
-    # ----------------------
-
     errors = np.array(y_pred) != np.array(y_true)
 
     ax2.scatter(
@@ -310,10 +297,7 @@ def plot_prediction_and_error_map(
     ax2.set_xlabel(feature_x)
     ax2.set_ylabel(feature_y)
 
-    # ----------------------
     # Legend
-    # ----------------------
-
     legend_elements = [
         Line2D(
             [0],
@@ -351,7 +335,9 @@ def plot_prediction_and_error_map(
     plt.show()
 
 
-#funzione di sara
+
+
+
 def plot_misclassified_feature_distributions(
     X,
     y_true,
@@ -416,7 +402,9 @@ def plot_misclassified_feature_distributions(
     plt.tight_layout()
     plt.show()    
 
-#feature importance di sara 
+
+
+
 def plot_feature_importance(
     model,
     feature_names,
@@ -477,9 +465,7 @@ def plot_feature_importance(
 
     results = {}
 
-    # =====================================================
-    # 1. CUSTOM IMPORTANCE FUNCTIONS
-    # =====================================================
+    # CUSTOM IMPORTANCE FUNCTIONS
     if importance_functions is not None:
 
         for name, func in importance_functions.items():
@@ -491,9 +477,7 @@ def plot_feature_importance(
 
             results[name] = values
 
-    # =====================================================
-    # 2. PERMUTATION IMPORTANCE (UNIVERSAL)
-    # =====================================================
+    # PERMUTATION IMPORTANCE (UNIVERSAL)
     if use_permutation:
 
         perm = permutation_importance(
@@ -513,9 +497,7 @@ def plot_feature_importance(
 
         results["permutation"] = values
 
-    # =====================================================
-    # 3. DATAFRAME
-    # =====================================================
+    #  DATAFRAME
     df = pd.DataFrame(
         results,
         index=feature_names
@@ -534,9 +516,7 @@ def plot_feature_importance(
     if top_k is not None:
         df = df.head(top_k)
 
-    # =====================================================
-    # 4. PLOT
-    # =====================================================
+    # PLOT
     x = np.arange(len(df.index))
 
     width = 0.8 / len(df.columns)
@@ -567,19 +547,17 @@ def plot_feature_importance(
     )
 
     plt.title("Feature Importance Comparison")
-
     plt.legend()
-
     plt.tight_layout()
-
     plt.show()
-    print("\n Feature Importance Scores:") # <- AGGIUNTA ENRICA 
-    display(df) # <- AGGIUNTA ENRICA 
+    print("\n Feature Importance Scores:")
+    display(df) 
     
     return df
 
 
-#funzione per vedere come l'accuracy migliori con la quantità di dati che abbiamo (non va su nn) (funzione enrica) 
+
+
 
 def plot_learning_curve(
     model,
@@ -715,7 +693,6 @@ def plot_misclassified_feature_distributions_separated(
 
 
 
-
 def plot_misclassified_stacked_hist(
     X,
     y_true,
@@ -757,14 +734,14 @@ def plot_misclassified_stacked_hist(
     ]
 
     colors = [
-        "#d62728",  # G→S (rosso)
-        "#ff9896",  # S→G (rosa chiaro)
+        "#d62728",  # G→S (red)
+        "#ff9896",  # S→G (pink)
 
-        "#1f77b4",  # G→Q (blu)
-        "#aec7e8",  # Q→G (azzurro chiaro)
+        "#1f77b4",  # G→Q (blue)
+        "#aec7e8",  # Q→G (light blue)
 
-        "#2ca02c",  # S→Q (verde)
-        "#98df8a",  # Q→S (verde chiaro)
+        "#2ca02c",  # S→Q (green)
+        "#98df8a",  # Q→S (light green)
     ]
 
     n_feat = len(features)
@@ -812,6 +789,5 @@ def plot_misclassified_stacked_hist(
          bbox_to_anchor=(0.5, 0.94)  
     )
     
-
     plt.tight_layout(rect=[0, 0, 1, 0.93])
     plt.show()

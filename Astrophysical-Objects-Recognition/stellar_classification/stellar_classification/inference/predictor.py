@@ -73,7 +73,7 @@ def compute_permutation_importance(
 
         print(f"{ind+1} batch shape: {len(X_batch)}")
 
-        #calcoliamo l'importanza media di ogni batch
+        #mean importance for each batch
         result = permutation_importance(
             model,
             X_batch,
@@ -84,10 +84,12 @@ def compute_permutation_importance(
         )
         all_importances.append(result.importances_mean)
 
-    #media tra i batch
+    #mmean between batches
     mean_imp = np.mean(all_importances, axis=0)
 
     return pd.Series(mean_imp, index=feature_names).sort_values(ascending=False)
+
+
 
 
 def compute_shap(

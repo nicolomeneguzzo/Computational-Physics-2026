@@ -18,9 +18,7 @@ def plot_training_history(history, title: str = "Training History"):
 
     epochs = range(1, len(history["train_loss"]) + 1)
 
-    # ─────────────────────────────────────────────────────────────
     # Plot 1: Loss
-    # ─────────────────────────────────────────────────────────────
     plt.figure(figsize=(10, 5))
 
     plt.plot(epochs, history["train_loss"], label="Train Loss")
@@ -33,9 +31,7 @@ def plot_training_history(history, title: str = "Training History"):
 
     plt.show()
 
-    # ─────────────────────────────────────────────────────────────
     # Plot 2: Accuracy
-    # ─────────────────────────────────────────────────────────────
     plt.figure(figsize=(10, 5))
 
     plt.plot(epochs, history["train_accuracy"], label="Train Accuracy")
@@ -50,6 +46,8 @@ def plot_training_history(history, title: str = "Training History"):
     plt.show()
 
 
+
+
 def plot_dropout_comparison(history_no_dropout, history_dropout, title: str):
     """
     Compare training curves between no-dropout and dropout models.
@@ -57,9 +55,7 @@ def plot_dropout_comparison(history_no_dropout, history_dropout, title: str):
 
     epochs = range(1, len(history_no_dropout["train_loss"]) + 1)
 
-    # ─────────────────────────────────────────────
     # LOSS comparison
-    # ─────────────────────────────────────────────
     plt.figure(figsize=(10, 5))
 
     plt.plot(epochs, history_no_dropout["train_loss"], label="No Dropout - Train Loss")
@@ -73,9 +69,7 @@ def plot_dropout_comparison(history_no_dropout, history_dropout, title: str):
 
     plt.show()
 
-    # ─────────────────────────────────────────────
     # ACCURACY comparison
-    # ─────────────────────────────────────────────
     plt.figure(figsize=(10, 5))
 
     plt.plot(epochs, history_no_dropout["train_accuracy"], label="No Dropout - Train Acc")
