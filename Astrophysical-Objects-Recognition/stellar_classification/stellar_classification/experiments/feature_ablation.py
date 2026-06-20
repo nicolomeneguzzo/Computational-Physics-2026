@@ -6,7 +6,7 @@ from stellar_classification.experiments.nn_runner import build_model
 from stellar_classification.trainer import train_neural
 from stellar_classification.inference.predictor import evaluate_neural
 from stellar_classification.data.preprocessing import to_dataloaders
-
+from stellar_classification.utils.seeding import set_seed
 
 def run_feature_ablation(
     X_train,
@@ -23,14 +23,14 @@ def run_feature_ablation(
     importance_scores,
     max_features=None,
     epochs=10,
+    seed=42,
 ):
     """
     Feature ablation study:
     progressively retrains the best model using top-k features.
     """
 
-    torch.manual_seed(42)
-    np.random.seed(42)
+    set_seed(seed)
 
     # ─────────────────────────────────────────────
     # 1. sort features by importance
@@ -69,10 +69,13 @@ def run_feature_ablation(
 
     for k in range(1, max_features + 1):
 
-        selected_features = ranked_features[:k]
+        if k < len(feature_names):
+            selected_features = ranked_features[:k]
+        else:
+            # ultimo step: usa l'ordine originale delle feature
+            selected_features = feature_names
 
         print(f"\nTraining with top-{k} features: {selected_features}")
-
         # ─────────────────────────────
         # filter datasets
         # ─────────────────────────────
@@ -84,16 +87,45 @@ def run_feature_ablation(
         X_val_k   = X_val[:, idx]
         X_test_k  = X_test[:, idx]
 
+        #if k == len(feature_names):
+        #    print("\n=== DATASET CHECK ===")
+        #    print(
+        #        "X_train identical:",
+        #        np.array_equal(X_train_k, X_train)
+        #    )
+        #    print(
+        #        "X_val identical:",
+        #        np.array_equal(X_val_k, X_val)
+        #    )
+        #    print(
+        #        "X_test identical:",
+        #        np.array_equal(X_test_k, X_test)
+        #   )
+
         # ─────────────────────────────
         # build model (input size changes!)
         # ─────────────────────────────
-
+        
+        set_seed(seed)
         model = build_model(
             best_model_type,
             input_size=k,
             num_classes=num_classes,
             dropout=best_dropout,
         )
+
+        #if k == len(feature_names):
+        #    print("\n=== FEATURE ABLATION INITIAL WEIGHTS ===")
+        #    print(model.net[0].weight[0][:10])
+
+        #if k == len(feature_names):
+        #    print("\n=== INITIAL WEIGHTS FEATURE ABLATION ===")
+        #    print(
+        #        next(model.parameters())
+        #        .flatten()[:10]
+        #        .detach()
+        #        .cpu()
+        #    )
 
         # ─────────────────────────────
         # train
@@ -105,6 +137,19 @@ def run_feature_ablation(
             X_test_k, y_test,
             batch_size=64
         )
+
+        #if k == len(feature_names):
+        #    xb, yb = next(iter(train_loader_k))
+
+        #    print("\n=== ABLATION TRAIN LOADER ===")
+        #    print(yb[:20])
+        #    print("\n=== DATASET SHAPES ===")
+        #    print(X_train.shape)
+        #    print(X_train_k.shape)
+
+        #    print(np.allclose(X_train, X_train_k))
+        #    print(np.allclose(X_val, X_val_k))
+        #    print(np.allclose(X_test, X_test_k))
 
         trained_model, history, final_metrics = train_neural(
             model=model,

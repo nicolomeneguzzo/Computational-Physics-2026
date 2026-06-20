@@ -8,6 +8,7 @@ from stellar_classification.models.network import SimpleNN
 from stellar_classification.models.nn_variants import MediumNN, ComplexNN
 from stellar_classification.trainer import train_neural
 from stellar_classification.inference.predictor import evaluate_neural
+from stellar_classification.utils.seeding import set_seed
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -50,6 +51,7 @@ def run_experiments(
     model_types=None,
     learning_rates=None,
     epochs: int = 10,
+    seed: int = 42,
 ):
     """
     Run experiments over multiple NN architectures and learning rates.
@@ -70,7 +72,7 @@ def run_experiments(
     # ─────────────────────────────────────────────────────────────────────────
     # Grid search loop
     # ─────────────────────────────────────────────────────────────────────────
-
+    set_seed(seed)
     for model_type, lr in itertools.product(model_types, learning_rates):
 
         print(f"\nTraining {model_type} | lr={lr}")
@@ -79,8 +81,15 @@ def run_experiments(
         # 1. Build model
         # ─────────────────────────────────────────────────────────────────────
 
+        set_seed(seed)
         model = build_model(model_type, input_size, num_classes)
-
+        #print("\n=== INITIAL WEIGHTS RUN_EXPERIMENTS ===")
+        #print(
+        #    next(model.parameters())
+        #    .flatten()[:10]
+        #    .detach()
+        #    .cpu()
+        #)
         # ─────────────────────────────────────────────────────────────────────
         # 2. Train model
         # ─────────────────────────────────────────────────────────────────────
@@ -224,6 +233,7 @@ def run_dropout_ablation(
     results_df: pd.DataFrame,
     dropout_values=(0.0, 0.2, 0.3, 0.5),
     epochs: int = 10,
+    seed: int = 42,
 ):
     """
     Dropout ablation study using the best learning rate found
@@ -264,12 +274,31 @@ def run_dropout_ablation(
             # Build model
             # --------------------------------------------------
 
+            set_seed(seed)
             model = build_model(
                 model_type,
                 input_size,
                 num_classes,
                 dropout=dropout,
             )
+
+            #if (
+            #    model_type == "ComplexNN"
+            #    and lr == 0.001
+            #    and dropout == 0.2
+            #):
+            #    print("\n=== DROPOUT MODEL INITIAL WEIGHTS ===")
+            #    print(model.net[0].weight[0][:10])
+
+            #if (
+            #    model_type == "ComplexNN"
+            #    and lr == 0.001
+            #    and dropout == 0.2
+            #):
+            #    xb, yb = next(iter(train_loader))
+
+            #    print("\n=== DROPOUT FIRST BATCH LABELS ===")
+            #    print(yb[:20])
 
             # --------------------------------------------------
             # Train

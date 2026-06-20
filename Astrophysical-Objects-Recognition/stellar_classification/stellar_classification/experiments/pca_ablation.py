@@ -8,6 +8,7 @@ from stellar_classification.data.preprocessing import to_dataloaders
 from stellar_classification.experiments.nn_runner import build_model
 from stellar_classification.trainer import train_neural
 from stellar_classification.inference.predictor import evaluate_neural
+from stellar_classification.utils.seeding import set_seed
 
 
 def plot_explained_variance(pca):
@@ -49,11 +50,12 @@ def run_pca_ablation(
     device,
     component_list,
     epochs=10,
+    seed=42,
 ):
     """
     Train the best model using different PCA dimensions.
     """
-
+    set_seed(seed)
     results = []
 
     best_model_type = best_model_row["model"]
@@ -110,6 +112,7 @@ def run_pca_ablation(
         # Build model
         # ─────────────────────────────
 
+        set_seed(seed)
         model = build_model(
             best_model_type,
             input_size=n_components,
