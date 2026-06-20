@@ -8,6 +8,7 @@ from stellar_classification.models.network import SimpleNN
 from stellar_classification.models.nn_variants import MediumNN, ComplexNN
 from stellar_classification.trainer import train_neural
 from stellar_classification.inference.predictor import evaluate_neural
+from stellar_classification.utils.seeding import set_seed
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -50,6 +51,7 @@ def run_experiments(
     model_types=None,
     learning_rates=None,
     epochs: int = 10,
+    seed: int = 42,
 ):
     """
     Run experiments over multiple NN architectures and learning rates.
@@ -79,6 +81,7 @@ def run_experiments(
         # 1. Build model
         # ─────────────────────────────────────────────────────────────────────
 
+        set_seed(seed)
         model = build_model(model_type, input_size, num_classes)
 
         # ─────────────────────────────────────────────────────────────────────
@@ -144,14 +147,20 @@ def run_experiments(
 
             # Train metrics
             "train_accuracy": train_metrics["accuracy"],
+            "train_precision": train_metrics["precision"],
+            "train_recall": train_metrics["recall"],
             "train_f1": train_metrics["f1"],
 
             # Validation metrics
             "val_accuracy": val_metrics["accuracy"],
+            "val_precision": val_metrics["precision"],
+            "val_recall": val_metrics["recall"],
             "val_f1": val_metrics["f1"],
 
             # Test metrics
             "test_accuracy": test_metrics["accuracy"],
+            "test_precision": test_metrics["precision"],
+            "test_recall": test_metrics["recall"],
             "test_f1": test_metrics["f1"],
 
             # Full training history
@@ -168,6 +177,8 @@ def run_experiments(
             f"loss={final_metrics['final_loss']:.4f} | "
             f"train_acc={train_metrics['accuracy']:.2f}% | "
             f"val_acc={val_metrics['accuracy']:.2f}% | "
+            f"val_precision={val_metrics['precision']:.4f} | "
+            f"val_recall={val_metrics['recall']:.4f} | "
             f"val_f1={val_metrics['f1']:.4f}"
         )
 
@@ -215,6 +226,7 @@ def run_dropout_ablation(
     results_df: pd.DataFrame,
     dropout_values=(0.0, 0.2, 0.3, 0.5),
     epochs: int = 10,
+    seed: int = 42,
 ):
     """
     Dropout ablation study using the best learning rate found
@@ -254,7 +266,8 @@ def run_dropout_ablation(
             # --------------------------------------------------
             # Build model
             # --------------------------------------------------
-
+            
+            set_seed(seed)
             model = build_model(
                 model_type,
                 input_size,
@@ -272,6 +285,13 @@ def run_dropout_ablation(
                 val_loader=val_loader,
                 lr=lr,
                 num_epochs=epochs,
+            )
+
+            train_metrics = evaluate_neural(
+                train_loader,
+                trained_model,
+                device,
+                model_name=f"{model_type}_dropout_{dropout}",
             )
 
             # --------------------------------------------------
@@ -310,10 +330,20 @@ def run_dropout_ablation(
                 "final_train_acc": final_metrics["final_train_acc"],
                 "final_val_acc": final_metrics["final_val_acc"],
 
+                
+                "train_accuracy": train_metrics["accuracy"],
+                "train_precision": train_metrics["precision"],
+                "train_recall": train_metrics["recall"],
+                "train_f1": train_metrics["f1"],
+
                 "val_accuracy": val_metrics["accuracy"],
+                "val_precision": val_metrics["precision"],
+                "val_recall": val_metrics["recall"],
                 "val_f1": val_metrics["f1"],
 
                 "test_accuracy": test_metrics["accuracy"],
+                "test_precision": test_metrics["precision"],
+                "test_recall": test_metrics["recall"],
                 "test_f1": test_metrics["f1"],
 
                 "history": history,

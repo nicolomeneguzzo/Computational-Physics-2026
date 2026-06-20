@@ -158,6 +158,7 @@ def to_dataloaders(
     X_val: np.ndarray,   y_val: np.ndarray,
     X_test: np.ndarray,  y_test: np.ndarray,
     batch_size: int = 64,
+    seed: int = 42,
 ) -> tuple:
     """Convert numpy arrays to PyTorch ``DataLoader`` objects.
 
@@ -170,7 +171,15 @@ def to_dataloaders(
             torch.tensor(X, dtype=torch.float32),
             torch.tensor(y, dtype=torch.long),
         )
-        return DataLoader(ds, batch_size=batch_size, shuffle=shuffle)
+        generator = torch.Generator()
+        generator.manual_seed(seed)
+
+        return DataLoader(
+            ds,
+            batch_size=batch_size,
+            shuffle=shuffle,
+            generator=generator,
+        )
 
     return (
         _make_loader(X_train, y_train, shuffle=True),
