@@ -351,7 +351,7 @@ def plot_feature_ablation(
     y_train: np.ndarray,
     y_test: np.ndarray,
     feature_names: list,
-    title: str = 'Feature Ablation',
+    title_prefix="Model",    
     ax=None,
 ) -> None:
     """Plot F1 Macro-score vs number of features used, from most to least important.
@@ -437,7 +437,7 @@ def plot_feature_ablation(
 
     ax.set_xlabel('N° features used (most to least important)' )
     ax.set_ylabel('Test F1 Macro-score' )
-    ax.set_title(title)
+    ax.set_title(f"{title_prefix}: Feature Ablation")
     ax.legend()
 
 
@@ -792,7 +792,7 @@ def plot_feature_importance(
         else "Importance"
     )
 
-    plt.title("Feature Importance Comparison")
+    plt.title(f"{prefix_name}: Feature Importance Comparison")
     plt.legend()
     plt.tight_layout()
     plt.show()
@@ -809,7 +809,7 @@ def plot_learning_curve(
     model,
     X_train: np.ndarray,
     y_train: np.ndarray,
-    title: str = 'Learning Curve',
+    title_prefix="Model",
     cv: int = 5,
     n_points: int = 10,
     ax=None,
@@ -865,7 +865,7 @@ def plot_learning_curve(
 
     ax.set_xlabel('Training set size')
     ax.set_ylabel('F1 Macro-score')
-    ax.set_title(title)
+    ax.set_title(f"{title_prefix}: Learning Curve")
     ax.legend()
     ax.grid(alpha=0.3)
 
@@ -950,8 +950,6 @@ def plot_misclassified_stacked_hist(
     figsize=(9, 9),
     density=False
 ):
-
-    import pandas as pd
 
     if class_names is None:
         class_names = {
