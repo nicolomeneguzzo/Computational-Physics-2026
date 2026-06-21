@@ -9,12 +9,20 @@ from sklearn.model_selection import learning_curve
 from matplotlib.lines import Line2D 
 from matplotlib.colors import ListedColormap 
 from sklearn.metrics import f1_score
+from stellar_classification.data.preprocessing import (
+    remove_outliers,
+    METADATA_COLUMNS,
+    Z,
+)
 
 
 
-
-def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
-    """Bar chart of class frequencies.
+def plot_class_distribution(
+    y,
+    title: str = "Class Distribution"
+) -> None:
+    """
+    Bar chart of class frequencies.
 
     Parameters
     ----------
@@ -23,15 +31,253 @@ def plot_class_distribution(y, title: str = 'Class Distribution') -> None:
     title : str
         Plot title.
     """
+
     fig, ax = plt.subplots(figsize=(8, 5))
+
     unique, counts = np.unique(y, return_counts=True)
-    ax.bar([str(u) for u in unique], counts, color=sns.color_palette('Set3', len(unique)))
+
+    bars = ax.bar(
+        [str(u) for u in unique],
+        counts,
+        color=sns.color_palette("tab10", len(unique))
+    )
+
     ax.set_title(title)
-    ax.set_xlabel('Class')
-    ax.set_ylabel('Count')
+    ax.set_xlabel("Class")
+    ax.set_ylabel("Count")
+
+    # valori sopra le barre
+    labels = [f"{c:,}" for c in counts]
+
+    ax.bar_label(
+        bars,
+        labels=labels,
+        padding=3,
+        fontsize=10
+    )
+
     plt.tight_layout()
     plt.show()
 
+def plot_class_distribution_after_outliers(
+    df,
+    target_col="class"
+):
+    """
+    Plot class distribution before and after outlier removal.
+    """
+
+    df_before = df.copy()
+
+    df_before.drop(
+        columns=METADATA_COLUMNS + Z,
+        inplace=True,
+        errors="ignore"
+    )
+
+    before = (
+        df_before[target_col]
+        .value_counts()
+        .sort_index()
+    )
+
+    df_after = remove_outliers(df_before)
+
+    after = (
+        df_after[target_col]
+        .value_counts()
+        .sort_index()
+    )
+
+    stats = pd.DataFrame({
+        "Before": before,
+        "After": after
+    }).fillna(0)
+
+    # ----------------------------------------------------
+    # Plot
+    # ----------------------------------------------------
+
+    ax = stats.plot(
+        kind="bar",
+        figsize=(8, 5),
+        width=0.8
+    )
+
+    ax.set_title("Class Distribution Before vs After Outlier Removal")
+    ax.set_xlabel("Class")
+    ax.set_ylabel("Count")
+
+    plt.xticks(rotation=0)
+    plt.legend(title="")
+
+    for container in ax.containers:
+        ax.bar_label(
+            container,
+            fmt="%d",
+            fontsize=9,
+            padding=3
+        )
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_class_distribution_after_smote(
+    df,
+    target_col="class",
+    test_size=0.2,
+    val_ratio=0.25,
+    random_state=42,
+):
+    """
+    Plot training-set class distribution
+    before and after SMOTE.
+    """
+
+    from sklearn.model_selection import train_test_split
+    from imblearn.over_sampling import SMOTE
+
+    df = df.copy()
+
+    # stesso preprocessing di prepare_splits
+    df.drop(
+        columns=METADATA_COLUMNS + Z,
+        inplace=True,
+        errors="ignore"
+    )
+
+    df = remove_outliers(df)
+
+    X = df.drop(columns=[target_col]).values
+    y = df[target_col].values
+
+    # stesso split di prepare_splits
+    X_tv, X_test, y_tv, y_test = train_test_split(
+        X,
+        y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y
+    )
+
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_tv,
+        y_tv,
+        test_size=val_ratio,
+        random_state=random_state,
+        stratify=y_tv
+    )
+
+    # distribuzione prima di SMOTE
+    before = (
+        pd.Series(y_train)
+        .value_counts()
+        .sort_index()
+    )
+
+    # SMOTE
+    smote = SMOTE(random_state=1)
+    X_train_smote, y_train_smote = smote.fit_resample(
+        X_train,
+        y_train
+    )
+
+    # distribuzione dopo SMOTE
+    after = (
+        pd.Series(y_train_smote)
+        .value_counts()
+        .sort_index()
+    )
+
+    stats = pd.DataFrame({
+        "Before SMOTE": before,
+        "After SMOTE": after
+    }).fillna(0)
+
+    # -------------------------------------------------
+    # Plot
+    # -------------------------------------------------
+
+    ax = stats.plot(
+        kind="bar",
+        figsize=(8, 5),
+        width=0.8,
+        color=sns.color_palette("bright", 2)
+    )
+
+    ax.set_title(
+        "Training Set Class Distribution Before vs After SMOTE"
+    )
+    ax.set_xlabel("Class")
+    ax.set_ylabel("Count")
+
+    plt.xticks(rotation=0)
+    plt.legend(title="")
+
+    for container in ax.containers:
+        labels = [
+            f"{int(v):,}"
+            for v in container.datavalues
+        ]
+
+        ax.bar_label(
+            container,
+            labels=labels,
+            fontsize=9,
+            padding=3
+        )
+
+    plt.tight_layout()
+    plt.show()
+
+
+def print_outlier_removal_statistics(
+    df,
+    target_col="class"
+):
+    df = df.copy()
+
+    # stesso preprocessing di prepare_splits
+    df.drop(
+        columns=METADATA_COLUMNS + Z,
+        inplace=True,
+        errors="ignore"
+    )
+
+    before = (
+        df[target_col]
+        .value_counts()
+        .sort_index()
+    )
+
+    df_clean = remove_outliers(df)
+
+    after = (
+        df_clean[target_col]
+        .value_counts()
+        .sort_index()
+    )
+
+    stats = pd.DataFrame({
+        "before": before,
+        "after": after
+    }).fillna(0)
+
+    stats["removed"] = (
+        stats["before"] - stats["after"]
+    )
+
+    stats["removed_%"] = (
+        100 * stats["removed"] / stats["before"]
+    )
+
+    print(stats)
+
+    print(
+        "\nTotal removed:",
+        int(stats["removed"].sum())
+    )
 
 
 

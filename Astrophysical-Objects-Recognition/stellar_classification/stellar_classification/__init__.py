@@ -49,6 +49,9 @@ from .inference.predictor import (  # noqa: F401
 )
 from .visualization import (  # noqa: F401
     plot_class_distribution,
+    plot_class_distribution_after_outliers,
+    print_outlier_removal_statistics,
+    plot_class_distribution_after_smote,
     plot_confusion_matrix,
     plot_permutation_importance,
     plot_feature_ablation,
@@ -86,6 +89,9 @@ ___all__ = [
 
     # visualization
     'plot_class_distribution', 'plot_confusion_matrix',
+    'plot_class_distribution_after_outliers',
+    'print_outlier_removal_statistics',
+    'plot_class_distribution_after_smote'
     'plot_permutation_importance',
     'plot_prediction_and_error_map',
     'plot_misclassified_feature_distributions',
