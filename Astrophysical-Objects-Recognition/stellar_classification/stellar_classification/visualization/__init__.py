@@ -1,5 +1,7 @@
 """Visualization helpers for stellar classification."""
 
+from unicodedata import normalize
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -59,6 +61,8 @@ def plot_class_distribution(
     plt.tight_layout()
     plt.show()
 
+
+
 def plot_class_distribution_after_outliers(
     df,
     target_col="class"
@@ -94,10 +98,7 @@ def plot_class_distribution_after_outliers(
         "After": after
     }).fillna(0)
 
-    # ----------------------------------------------------
     # Plot
-    # ----------------------------------------------------
-
     ax = stats.plot(
         kind="bar",
         figsize=(8, 5),
@@ -121,6 +122,7 @@ def plot_class_distribution_after_outliers(
 
     plt.tight_layout()
     plt.show()
+
 
 
 def plot_class_distribution_after_smote(
@@ -195,10 +197,7 @@ def plot_class_distribution_after_smote(
         "After SMOTE": after
     }).fillna(0)
 
-    # -------------------------------------------------
     # Plot
-    # -------------------------------------------------
-
     ax = stats.plot(
         kind="bar",
         figsize=(8, 5),
@@ -230,6 +229,7 @@ def plot_class_distribution_after_smote(
 
     plt.tight_layout()
     plt.show()
+
 
 
 def print_outlier_removal_statistics(
@@ -443,6 +443,7 @@ def plot_feature_ablation(
 
     if standalone:
         plt.tight_layout()
+        plt.grid(True)
         plt.show()
 
 
@@ -674,6 +675,9 @@ def plot_feature_importance(
     figsize=(14, 6),
     rotation=45,
     alpha=0.85,
+
+    # colors
+    importance_colors=None,
 ):
     """
     Fully generalized feature importance plotter.
@@ -694,7 +698,6 @@ def plot_feature_importance(
     feature_names : list[str]
 
     importance_functions : dict or None
-
         Example:
         {
             "gain": lambda m: ...,
@@ -707,9 +710,27 @@ def plot_feature_importance(
 
     X_test, y_test :
         Required if use_permutation=True
+
+    importance_colors : dict or None
+        Fixed colors for importance methods.
+        Example:
+        {
+            "permutation": "crimson",
+            "shap": "green"
+        }
     """
 
     results = {}
+
+    # default fixed colors
+    if importance_colors is None:
+        importance_colors = {}
+
+    # always keep permutation color consistent
+    importance_colors.setdefault(
+        "permutation",
+        "crimson"
+    )
 
     # CUSTOM IMPORTANCE FUNCTIONS
     if importance_functions is not None:
@@ -736,14 +757,16 @@ def plot_feature_importance(
             n_jobs=-1
         )
 
-        values = np.array(perm.importances_mean)
+        values = np.array(
+            perm.importances_mean
+        )
 
         if normalize and values.sum() > 0:
             values = values / values.sum()
 
         results["permutation"] = values
 
-    #  DATAFRAME
+    # DATAFRAME
     df = pd.DataFrame(
         results,
         index=feature_names
@@ -763,42 +786,50 @@ def plot_feature_importance(
         df = df.head(top_k)
 
     # PLOT
-    x = np.arange(len(df.index))
+    n_methods = len(df.columns)
+    n_features = len(df.index)
 
-    width = 0.8 / len(df.columns)
+    group_spacing = 1.2  
+    x = np.arange(len(df.index)) * group_spacing
+    bar_width = 0.25
+    group_width = bar_width * n_methods
 
     plt.figure(figsize=figsize)
 
+    default_colors = plt.cm.tab10.colors
+
     for i, col in enumerate(df.columns):
 
+        color = importance_colors.get( col, default_colors[i % len(default_colors)] )
+
         plt.bar(
-            x + i * width,
-            df[col].values,
-            width=width,
-            label=col,
-            alpha=alpha
-        )
+             x + (i - (n_methods-1)/2) * bar_width,
+              df[col].values,
+              width=bar_width,
+               label=col,
+               alpha=alpha,
+               color=color
+               )
 
     plt.xticks(
-        x + width * (len(df.columns)-1)/2,
+        x,
         df.index,
         rotation=rotation,
         ha="right"
     )
+    plt.xlim(    -0.6,
+    n_features - 0.4)
 
-    plt.ylabel(
-        "Normalized importance"
-        if normalize
-        else "Importance"
-    )
+    plt.ylabel( "Normalized importance" if normalize else "Importance")
 
-    plt.title(f"{prefix_name}: Feature Importance Comparison")
+    plt.title( f"{prefix_name}: Feature Importance Comparison")
+
     plt.legend()
     plt.tight_layout()
     plt.show()
     print("\n Feature Importance Scores:")
-    display(df) 
-    
+    display(df)
+
     return df
 
 
