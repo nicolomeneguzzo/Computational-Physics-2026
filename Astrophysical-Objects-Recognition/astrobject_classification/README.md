@@ -219,13 +219,15 @@ The models were evaluated on the held-out Test set. Since the original dataset e
 
 *Note: XGBoost achieved the highest F1-score, striking the best balance between precision and recall, and demonstrating excellent generalization with minimal overfitting compared to deeper tree ensembles.*
 
-### Visual Diagnostics (da togliere se non mettiamo le immagini) 
+### Visual Diagnostics 
 
-- **Confusion Matrix:** `results/confusion_matrix_xgboost.png`
+- **Confusion Matrix:** `results_plot/confusion_matrix_xgboost.png`
 
-- **Feature Importance:** `results/feature_importance_comparison.png`
+- **Feature Importance:** `results_plot/feature_importance_comparison.png`
 
-- **Learning Curve:** `results/learning_curve_xgboost.png`
+- **Learning Curve:** `results_plot/learning_curve_xgboost.png`
+
+- **Stacked Error histogram:** `results_plot/stacked_error_histogram_xgboost.png`
 
 
 
