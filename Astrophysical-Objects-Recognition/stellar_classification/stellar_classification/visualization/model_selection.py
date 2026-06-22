@@ -44,8 +44,7 @@ def get_final_candidates(results_df, dropout_results, top_k: int = 3, sort_by: s
 def plot_feature_ablation_nn(
     df: pd.DataFrame,
     best_val_f1: float,
-    title: str = "Feature Ablation Study"
-):
+    title: str = "Neural Network: Feature Ablation "):
     """
     Plot F1-score vs number of features for ablation study.
     Also shows baseline (best model) and 95% threshold.

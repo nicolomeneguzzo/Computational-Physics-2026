@@ -345,13 +345,14 @@ def plot_permutation_importance(
 
 
 def plot_feature_ablation(
-    model,
+    model,     
     X_train: np.ndarray,
     X_test: np.ndarray,
     y_train: np.ndarray,
     y_test: np.ndarray,
     feature_names: list,
-    title_prefix="Model",    
+    title_prefix="Model", 
+    
     ax=None,
 ) -> None:
     """Plot F1 Macro-score vs number of features used, from most to least important.
