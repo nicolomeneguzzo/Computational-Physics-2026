@@ -301,7 +301,7 @@ def tune_model(
     *,
     scoring: str = "f1_macro",
     cv: int = 3,
-    n_iter: int = 20,
+    n_iter: int = 10,
     n_jobs: int = 3,
     random_state: int = 42,
     verbose: int = 0,

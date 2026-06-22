@@ -347,8 +347,10 @@ def plot_permutation_importance(
 def plot_feature_ablation(
     model,     
     X_train: np.ndarray,
+    X_val: np.ndarray,
     X_test: np.ndarray,
     y_train: np.ndarray,
+    y_val: np.ndarray,
     y_test: np.ndarray,
     feature_names: list,
     title_prefix="Model", 
@@ -793,10 +795,10 @@ def plot_feature_importance(
     n_methods = len(df.columns)
     n_features = len(df.index)
 
-    group_spacing = 1.2  
-    x = np.arange(len(df.index)) * group_spacing
-    bar_width = 0.25
-    group_width = bar_width * n_methods
+    group_spacing = 1.2
+    x = np.arange(n_features) * group_spacing
+
+    bar_width = min(0.8 / max(n_methods, 1), 0.25)
 
     plt.figure(figsize=figsize)
 
@@ -804,16 +806,21 @@ def plot_feature_importance(
 
     for i, col in enumerate(df.columns):
 
-        color = importance_colors.get( col, default_colors[i % len(default_colors)] )
+        color = importance_colors.get(
+            col,
+            default_colors[i % len(default_colors)]
+        )
+
+        offset = (i - (n_methods - 1) / 2) * bar_width
 
         plt.bar(
-             x + (i - (n_methods-1)/2) * bar_width,
-              df[col].values,
-              width=bar_width,
-               label=col,
-               alpha=alpha,
-               color=color
-               )
+            x + offset,
+            df[col].values,
+            width=bar_width,
+            label=col,
+            alpha=alpha,
+            color=color
+        )
 
     plt.xticks(
         x,
@@ -821,17 +828,34 @@ def plot_feature_importance(
         rotation=rotation,
         ha="right"
     )
-    plt.xlim(    -0.6,
-    n_features - 0.4)
 
-    plt.ylabel( "Normalized importance" if normalize else "Importance")
+    # Margini automatici
+    margin = max(bar_width * n_methods, 0.4)
 
-    plt.title( f"{prefix_name}: Feature Importance Comparison")
+    plt.xlim(
+        x[0] - margin,
+        x[-1] + margin
+    )
 
-    plt.legend()
+    plt.ylabel(
+        "Normalized Importance"
+        if normalize
+        else "Importance"
+    )
+
+    plt.title(
+        f"{prefix_name}: Feature Importance Comparison"
+    )
+   
+    plt.legend(
+        loc="upper right"
+    )
+
     plt.tight_layout()
+
     plt.show()
-    print("\n Feature Importance Scores:")
+
+    print("\nFeature Importance Scores:")
     display(df)
 
     return df
