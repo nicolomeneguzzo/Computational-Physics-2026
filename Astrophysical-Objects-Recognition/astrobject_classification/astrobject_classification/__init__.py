@@ -1,25 +1,25 @@
-"""stellar_classification — top-level package for SDSS stellar-object classification.
+"""astrobject_classification — top-level package for SDSS astrophysics-object classification.
 
 Quick-start
 -----------
->>> from stellar_classification.data.preprocessing import prepare_splits, to_dataloaders
->>> from stellar_classification.trainer import train_traditional, train_voting, train_neural, compute_metrics,  tune_model, evaluate_single_model
->>> from stellar_classification.inference.predictor import (
+>>> from astrobject_classification.data.preprocessing import prepare_splits, to_dataloaders
+>>> from astrobject_classification.trainer import train_traditional, train_voting, train_neural, compute_metrics,  tune_model, evaluate_single_model
+>>> from astrobject_classification.inference.predictor import (
 ...     evaluate_test_set, evaluate_neural, compute_permutation_importance, shap_summary_tree_model, predict_with_confidence
 ... )
->>> from stellar_classification.visualization import (
+>>> from astrobject_classification.visualization import (
 ...     plot_class_distribution, plot_confusion_matrix, plot_permutation_importance, 
 ...     plot_feature_ablation, plot_learning_curve, plot_prediction_and_error_map, plot_misclassified_feature_distributions
 ... )
->>> from stellar_classification.utils.metrics import print_metrics
->>> from stellar_classification.models.network import SimpleNN
->>> from stellar_classification.models.trees import SimpleRandomForest, SimpleExtraTrees
->>> from stellar_classification.experiments.nn_runner import run_experiments, device
->>> from stellar_classification.visualization.nn_plots import plot_training_history, plot_dropout_comparison
->>> from stellar_classification.visualization.model_selection import get_final_candidates, plot_feature_ablation_nn, plot_pca_ablation
->>> from stellar_classification.utils.wrapper import TorchModelWrapper
->>> from stellar_classification.experiments.feature_ablation import run_feature_ablation, get_feature_subset_threshold
->>> from stellar_classification.experiments.pca_ablation import   plot_explained_variance,run_pca_ablation
+>>> from astrobject_classification.utils.metrics import print_metrics
+>>> from astrobject_classification.models.network import SimpleNN
+>>> from astrobject_classification.models.trees import SimpleRandomForest, SimpleExtraTrees
+>>> from astrobject_classification.experiments.nn_runner import run_experiments, device
+>>> from astrobject_classification.visualization.nn_plots import plot_training_history, plot_dropout_comparison
+>>> from astrobject_classification.visualization.model_selection import get_final_candidates, plot_feature_ablation_nn, plot_pca_ablation
+>>> from astrobject_classification.utils.wrapper import TorchModelWrapper
+>>> from astrobject_classification.experiments.feature_ablation import run_feature_ablation, get_feature_subset_threshold
+>>> from astrobject_classification.experiments.pca_ablation import   plot_explained_variance,run_pca_ablation
 
 
 """

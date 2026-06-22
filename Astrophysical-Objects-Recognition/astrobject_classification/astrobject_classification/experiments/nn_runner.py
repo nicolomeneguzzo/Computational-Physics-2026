@@ -4,24 +4,18 @@ import itertools
 import pandas as pd
 import torch
 
-from stellar_classification.models.network import SimpleNN
-from stellar_classification.models.nn_variants import MediumNN, ComplexNN
-from stellar_classification.trainer import train_neural
-from stellar_classification.inference.predictor import evaluate_neural
-from stellar_classification.utils.seeding import set_seed
+from astrobject_classification.models.network import SimpleNN
+from astrobject_classification.models.nn_variants import MediumNN, ComplexNN
+from astrobject_classification.trainer import train_neural
+from astrobject_classification.inference.predictor import evaluate_neural
+from astrobject_classification.utils.seeding import set_seed
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Device
-# ─────────────────────────────────────────────────────────────────────────────
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Model factory
-# ─────────────────────────────────────────────────────────────────────────────
-
 def build_model(model_type: str, input_size: int, num_classes: int, dropout: float = 0.0):
     """Create a model based on a string identifier."""
 
@@ -38,10 +32,7 @@ def build_model(model_type: str, input_size: int, num_classes: int, dropout: flo
         raise ValueError(f"Unknown model type: {model_type}")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Main runner
-# ─────────────────────────────────────────────────────────────────────────────
-
 def run_experiments(
     train_loader,
     val_loader,
@@ -57,10 +48,7 @@ def run_experiments(
     Run experiments over multiple NN architectures and learning rates.
     """
 
-    # ─────────────────────────────────────────────────────────────────────────
     # Default configurations
-    # ─────────────────────────────────────────────────────────────────────────
-
     if model_types is None:
         model_types = ["SimpleNN", "MediumNN", "ComplexNN"]
 
@@ -69,25 +57,17 @@ def run_experiments(
 
     results = []
 
-    # ─────────────────────────────────────────────────────────────────────────
     # Grid search loop
-    # ─────────────────────────────────────────────────────────────────────────
-
     for model_type, lr in itertools.product(model_types, learning_rates):
 
         print(f"\nTraining {model_type} | lr={lr}")
 
-        # ─────────────────────────────────────────────────────────────────────
-        # 1. Build model
-        # ─────────────────────────────────────────────────────────────────────
+        #  Build model
 
         set_seed(seed)
         model = build_model(model_type, input_size, num_classes)
 
-        # ─────────────────────────────────────────────────────────────────────
-        # 2. Train model
-        # ─────────────────────────────────────────────────────────────────────
-
+        #  Train model
         trained_model, history, final_metrics = train_neural(
             model=model,
             train_loader=train_loader,
@@ -96,10 +76,7 @@ def run_experiments(
             num_epochs=epochs,
         )
 
-        # ─────────────────────────────────────────────────────────────────────
-        # 3. Evaluate on TRAIN
-        # ─────────────────────────────────────────────────────────────────────
-
+        #  Evaluate on TRAIN
         train_metrics = evaluate_neural(
             train_loader,
             trained_model,
@@ -107,10 +84,7 @@ def run_experiments(
             model_name=model_type,
         )
 
-        # ─────────────────────────────────────────────────────────────────────
-        # 4. Evaluate on VALIDATION
-        # ─────────────────────────────────────────────────────────────────────
-
+        #  Evaluate on VALIDATION
         val_metrics = evaluate_neural(
             val_loader,
             trained_model,
@@ -118,10 +92,7 @@ def run_experiments(
             model_name=model_type,
         )
 
-        # ─────────────────────────────────────────────────────────────────────
-        # 5. Evaluate on TEST
-        # ─────────────────────────────────────────────────────────────────────
-
+        #  Evaluate on TEST
         test_metrics = evaluate_neural(
             test_loader,
             trained_model,
@@ -129,10 +100,7 @@ def run_experiments(
             model_name=model_type,
         )
 
-        # ─────────────────────────────────────────────────────────────────────
-        # 6. Save results
-        # ─────────────────────────────────────────────────────────────────────
-
+        #  Save results
         results.append({
 
             # Model info
@@ -167,10 +135,7 @@ def run_experiments(
             "history": history,
         })
 
-        # ─────────────────────────────────────────────────────────────────────
-        # 7. Logging
-        # ─────────────────────────────────────────────────────────────────────
-
+        #  Logging
         print(
             f"✔ Done: {model_type} | "
             f"lr={lr} | "
@@ -182,19 +147,11 @@ def run_experiments(
             f"val_f1={val_metrics['f1']:.4f}"
         )
 
-    # ─────────────────────────────────────────────────────────────────────────
-    # Results dataframe
-    # ─────────────────────────────────────────────────────────────────────────
-
-    results_df = pd.DataFrame(results)
+        results_df = pd.DataFrame(results)
 
     # Sort by validation F1
     results_df = results_df.sort_values(by="val_f1", ascending=False)
-
-    # ─────────────────────────────────────────────────────────────────────────
-    # Print summaries
-    # ─────────────────────────────────────────────────────────────────────────
-
+    
     print("\nBEST CONFIGURATION:")
     print(results_df.iloc[0])
 
@@ -216,6 +173,8 @@ def run_experiments(
     )
 
     return results_df
+
+
 
 def run_dropout_ablation(
     train_loader,
@@ -239,10 +198,6 @@ def run_dropout_ablation(
 
     for model_type in target_models:
 
-        # --------------------------------------------------
-        # Recupera automaticamente il best LR
-        # --------------------------------------------------
-
         best_row = (
             results_df[results_df["model"] == model_type]
             .sort_values("val_f1", ascending=False)
@@ -263,10 +218,7 @@ def run_dropout_ablation(
                 f"{model_type} | lr={lr} | dropout={dropout}"
             )
 
-            # --------------------------------------------------
-            # Build model
-            # --------------------------------------------------
-            
+            # Build model           
             set_seed(seed)
             model = build_model(
                 model_type,
@@ -275,10 +227,7 @@ def run_dropout_ablation(
                 dropout=dropout,
             )
 
-            # --------------------------------------------------
             # Train
-            # --------------------------------------------------
-
             trained_model, history, final_metrics = train_neural(
                 model=model,
                 train_loader=train_loader,
@@ -294,10 +243,7 @@ def run_dropout_ablation(
                 model_name=f"{model_type}_dropout_{dropout}",
             )
 
-            # --------------------------------------------------
-            # Validation
-            # --------------------------------------------------
-
+            # Validation            
             val_metrics = evaluate_neural(
                 val_loader,
                 trained_model,
@@ -305,10 +251,7 @@ def run_dropout_ablation(
                 model_name=f"{model_type}_dropout_{dropout}",
             )
 
-            # --------------------------------------------------
             # Test
-            # --------------------------------------------------
-
             test_metrics = evaluate_neural(
                 test_loader,
                 trained_model,
@@ -316,10 +259,7 @@ def run_dropout_ablation(
                 model_name=f"{model_type}_dropout_{dropout}",
             )
 
-            # --------------------------------------------------
             # Save
-            # --------------------------------------------------
-
             results.append({
                 "model": model_type,
                 "learning_rate": lr,

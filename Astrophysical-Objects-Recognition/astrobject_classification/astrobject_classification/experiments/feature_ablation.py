@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 import torch
 
-from stellar_classification.experiments.nn_runner import build_model
-from stellar_classification.trainer import train_neural
-from stellar_classification.inference.predictor import evaluate_neural
-from stellar_classification.data.preprocessing import to_dataloaders
-from stellar_classification.utils.seeding import set_seed
+from astrobject_classification.experiments.nn_runner import build_model
+from astrobject_classification.trainer import train_neural
+from astrobject_classification.inference.predictor import evaluate_neural
+from astrobject_classification.data.preprocessing import to_dataloaders
+from astrobject_classification.utils.seeding import set_seed
 
 def run_feature_ablation(
     X_train,
@@ -31,11 +31,8 @@ def run_feature_ablation(
     """
 
     set_seed(seed)
-
-    # ─────────────────────────────────────────────
-    # 1. sort features by importance
-    # ─────────────────────────────────────────────
-
+ 
+    # sort features by importance
     ranked_features = importance_scores.sort_values(ascending=False).index.tolist()
 
     if max_features is None:
@@ -43,10 +40,7 @@ def run_feature_ablation(
 
     results = []
 
-    # ─────────────────────────────────────────────
-    # 2. get best hyperparameters
-    # ─────────────────────────────────────────────
-
+    # get best hyperparameters
     best_model_type = best_model_row["model"]
     best_lr = best_model_row["learning_rate"]
 
@@ -63,10 +57,7 @@ def run_feature_ablation(
         f"dropout={best_dropout}"
     )
 
-    # ─────────────────────────────────────────────
-    # 3. loop over k features
-    # ─────────────────────────────────────────────
-
+    # loop over k features
     for k in range(1, max_features + 1):
 
         if k < len(feature_names):
@@ -76,35 +67,13 @@ def run_feature_ablation(
             selected_features = feature_names
 
         print(f"\nTraining with top-{k} features: {selected_features}")
-        # ─────────────────────────────
         # filter datasets
-        # ─────────────────────────────
-
         feature_to_idx = {f: i for i, f in enumerate(feature_names)}
         idx = [feature_to_idx[f] for f in selected_features]
 
         X_train_k = X_train[:, idx]
         X_val_k   = X_val[:, idx]
         X_test_k  = X_test[:, idx]
-
-        #if k == len(feature_names):
-        #    print("\n=== DATASET CHECK ===")
-        #    print(
-        #        "X_train identical:",
-        #        np.array_equal(X_train_k, X_train)
-        #    )
-        #    print(
-        #        "X_val identical:",
-        #        np.array_equal(X_val_k, X_val)
-        #    )
-        #    print(
-        #        "X_test identical:",
-        #        np.array_equal(X_test_k, X_test)
-        #   )
-
-        # ─────────────────────────────
-        # build model (input size changes!)
-        # ─────────────────────────────
         
         set_seed(seed)
         model = build_model(
@@ -114,43 +83,14 @@ def run_feature_ablation(
             dropout=best_dropout,
         )
 
-        #if k == len(feature_names):
-        #    print("\n=== FEATURE ABLATION INITIAL WEIGHTS ===")
-        #    print(model.net[0].weight[0][:10])
-
-        #if k == len(feature_names):
-        #    print("\n=== INITIAL WEIGHTS FEATURE ABLATION ===")
-        #    print(
-        #        next(model.parameters())
-        #        .flatten()[:10]
-        #        .detach()
-        #        .cpu()
-        #    )
-
-        # ─────────────────────────────
         # train
-        # ─────────────────────────────
-
         train_loader_k, val_loader_k, test_loader_k = to_dataloaders(
             X_train_k, y_train,
             X_val_k, y_val,
             X_test_k, y_test,
             batch_size=64
         )
-
-        #if k == len(feature_names):
-        #    xb, yb = next(iter(train_loader_k))
-
-        #    print("\n=== ABLATION TRAIN LOADER ===")
-        #    print(yb[:20])
-        #    print("\n=== DATASET SHAPES ===")
-        #    print(X_train.shape)
-        #    print(X_train_k.shape)
-
-        #    print(np.allclose(X_train, X_train_k))
-        #    print(np.allclose(X_val, X_val_k))
-        #    print(np.allclose(X_test, X_test_k))
-
+        
         trained_model, history, final_metrics = train_neural(
             model=model,
             train_loader=train_loader_k,
@@ -158,10 +98,7 @@ def run_feature_ablation(
             lr=best_lr,
             num_epochs=epochs,
         )
-        # ─────────────────────────────
         # IMPORTANT: evaluation
-        # ─────────────────────────────
-
         val_metrics = evaluate_neural(
             val_loader_k,
             trained_model,

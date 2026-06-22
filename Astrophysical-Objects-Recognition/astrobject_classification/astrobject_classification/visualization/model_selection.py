@@ -43,7 +43,7 @@ def get_final_candidates(results_df, dropout_results, top_k: int = 3, sort_by: s
 
 def plot_feature_ablation_nn(
     df: pd.DataFrame,
-    best_val_f1: float,
+    best_test_f1: float,
     title: str = "Neural Network: Feature Ablation "):
     """
     Plot F1-score vs number of features for ablation study.
@@ -55,26 +55,27 @@ def plot_feature_ablation_nn(
     # Curves
     plt.plot(
         df["n_features"],
-        df["val_f1"],
+        df["test_f1"],
         marker="o",
-        label="Validation F1"
+        label="Test F1"
     )
     
     # Baseline (best model)
     plt.axhline(
-        y=best_val_f1,
-        color="orange",
+        y=best_test_f1,
+        color="red",
         linestyle="--",
         linewidth=2,
-        label=f"Best Model F1 ({best_val_f1:.4f})"
+        label=f"Full F1 Macro: {best_test_f1:.4f}"
     )
    
     # Labels
     plt.xlabel("Number of Features")
-    plt.ylabel("F1 Score")
+    plt.ylabel("Test F1 Score Macro-score")
+    plt.ylim(0.50, 0.90)
     plt.title(title)
     plt.grid(True)
-    plt.legend()
+    plt.legend(loc="lower right")
 
     plt.show()
 

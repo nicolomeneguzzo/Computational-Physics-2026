@@ -1,4 +1,4 @@
-"""PyTorch neural network for stellar classification."""
+"""PyTorch neural network for astrophysics object classification."""
 import torch
 import torch.nn as nn
 

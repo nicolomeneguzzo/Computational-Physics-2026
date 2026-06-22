@@ -1,4 +1,4 @@
-"""Tree-based models for stellar classification."""
+"""Tree-based models for astrophysics object classification."""
 
 from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 

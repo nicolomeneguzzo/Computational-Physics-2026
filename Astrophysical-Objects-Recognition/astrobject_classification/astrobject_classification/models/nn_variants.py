@@ -1,4 +1,4 @@
-"""Additional neural network architectures for stellar classification."""
+"""Additional neural network architectures for astrophysics object classification."""
 
 import torch
 import torch.nn as nn

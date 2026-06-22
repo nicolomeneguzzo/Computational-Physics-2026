@@ -11,7 +11,7 @@ from sklearn.model_selection import learning_curve
 from matplotlib.lines import Line2D 
 from matplotlib.colors import ListedColormap 
 from sklearn.metrics import f1_score
-from stellar_classification.data.preprocessing import (
+from astrobject_classification.data.preprocessing import (
     remove_outliers,
     METADATA_COLUMNS,
     Z,
@@ -426,7 +426,8 @@ def plot_feature_ablation(
     ax.plot(
         range(1, len(imp_order) + 1),
         f1_scores,
-        marker='o'
+        marker='o',
+        label="Test F1"
     )
 
     ax.axhline(
@@ -436,10 +437,12 @@ def plot_feature_ablation(
         label=f'Full F1 Macro: {f1_scores[-1]:.3f}'
     )
 
-    ax.set_xlabel('N° features used (most to least important)' )
+    ax.set_xlabel('Number of Features ' )
     ax.set_ylabel('Test F1 Macro-score' )
     ax.set_title(f"{title_prefix}: Feature Ablation")
-    ax.legend()
+    ax.set_ylim(0.50, 0.90)
+
+    ax.legend(loc="lower right")
 
 
     if standalone:

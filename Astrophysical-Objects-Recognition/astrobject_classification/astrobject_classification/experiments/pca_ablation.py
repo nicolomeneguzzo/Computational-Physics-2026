@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 from sklearn.decomposition import PCA
 
-from stellar_classification.data.preprocessing import to_dataloaders
-from stellar_classification.experiments.nn_runner import build_model
-from stellar_classification.trainer import train_neural
-from stellar_classification.inference.predictor import evaluate_neural
-from stellar_classification.utils.seeding import set_seed
+from astrobject_classification.data.preprocessing import to_dataloaders
+from astrobject_classification.experiments.nn_runner import build_model
+from astrobject_classification.trainer import train_neural
+from astrobject_classification.inference.predictor import evaluate_neural
+from astrobject_classification.utils.seeding import set_seed
 
 
 def plot_explained_variance(pca):
@@ -36,6 +36,7 @@ def plot_explained_variance(pca):
     plt.grid(True)
 
     plt.show()
+
 
 
 def run_pca_ablation(
@@ -75,10 +76,7 @@ def run_pca_ablation(
             f"components={n_components}"
         )
 
-        # ─────────────────────────────
         # PCA
-        # ─────────────────────────────
-
         pca = PCA(n_components=n_components)
 
         X_train_pca = pca.fit_transform(X_train)
@@ -94,10 +92,7 @@ def run_pca_ablation(
             f"{explained_variance * 100:.2f}%"
         )
 
-        # ─────────────────────────────
         # DataLoaders
-        # ─────────────────────────────
-
         train_loader, val_loader, test_loader = to_dataloaders(
             X_train_pca,
             y_train,
@@ -108,10 +103,7 @@ def run_pca_ablation(
             batch_size=64,
         )
 
-        # ─────────────────────────────
         # Build model
-        # ─────────────────────────────
-
         set_seed(seed)
         model = build_model(
             best_model_type,
@@ -120,10 +112,7 @@ def run_pca_ablation(
             dropout=best_dropout,
         )
 
-        # ─────────────────────────────
         # Train
-        # ─────────────────────────────
-
         trained_model, history, final_metrics = train_neural(
             model=model,
             train_loader=train_loader,
@@ -132,10 +121,7 @@ def run_pca_ablation(
             num_epochs=epochs,
         )
 
-        # ─────────────────────────────
         # Validation
-        # ─────────────────────────────
-
         val_metrics = evaluate_neural(
             val_loader,
             trained_model,
@@ -143,10 +129,7 @@ def run_pca_ablation(
             model_name=f"PCA_{n_components}",
         )
 
-        # ─────────────────────────────
         # Test
-        # ─────────────────────────────
-
         test_metrics = evaluate_neural(
             test_loader,
             trained_model,
