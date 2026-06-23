@@ -16,6 +16,9 @@ from astrobject_classification.data.preprocessing import (
     METADATA_COLUMNS,
     Z,
 )
+from sklearn.base import clone
+
+
 
 
 
@@ -345,38 +348,20 @@ def plot_permutation_importance(
 
 
 def plot_feature_ablation(
-    model,     
-    X_train: np.ndarray,
-    X_val: np.ndarray,
-    X_test: np.ndarray,
-    y_train: np.ndarray,
-    y_val: np.ndarray,
-    y_test: np.ndarray,
-    feature_names: list,
-    title_prefix="Model", 
-    
+    model,
+    X_train,
+    X_val,
+    X_test,
+    y_train,
+    y_val,
+    y_test,
+    feature_names,
+    title_prefix="Model",
+    use_early_stopping=False,
     ax=None,
-) -> None:
-    """Plot F1 Macro-score vs number of features used, from most to least important.
-    
-    Parameters
-    ----------
-    model : fitted estimator
-        Trained sklearn model with feature_importances_ attribute.
-    X_train, X_test : np.ndarray
-        Training and test arrays.
-    y_train, y_test : np.ndarray
-        Training and test labels.
-    feature_names : list
-        Feature names corresponding to columns of X.
-    title : str
-        Plot title.
-    ax : matplotlib Axes, optional
-        If provided, draws on existing axes. Otherwise creates a new figure.
-    """
+):
 
-    # Rank features according to their importance
-
+    # Ordina le feature per importanza
     imp_order = pd.Series(
         model.feature_importances_,
         index=feature_names
@@ -384,38 +369,53 @@ def plot_feature_ablation(
         ascending=False
     ).index.tolist()
 
-    # Train models using an increasing number of features
-    # selected from the most to the least important ones
+    feature_to_idx = {
+        f: i for i, f in enumerate(feature_names)
+    }
+
     f1_scores = []
 
     for i in range(1, len(imp_order) + 1):
 
-        # Select the first i most important features
         selected_idx = [
-            list(feature_names).index(f)
+            feature_to_idx[f]
             for f in imp_order[:i]
         ]
 
-        # Create a new model with the same hyperparameters
-        m = model.__class__(
-            **model.get_params()
+        m = clone(model)
+
+        if use_early_stopping:
+
+            m.fit(
+                X_train[:, selected_idx],
+                y_train,
+                eval_set=[
+                    (
+                        X_val[:, selected_idx],
+                        y_val
+                    )
+                ],
+                verbose=False
+            )
+
+        else:
+
+            m.fit(
+                X_train[:, selected_idx],
+                y_train
+            )
+
+        pred = m.predict(
+            X_test[:, selected_idx]
         )
 
-        # Train model using only selected features
-        m.fit(
-            X_train[:, selected_idx],
-            y_train
+        f1_scores.append(
+            f1_score(
+                y_test,
+                pred,
+                average='macro'
+            )
         )
-
-        # Evaluate using macro-averaged F1-score
-        f1 = f1_score(
-            y_test,
-            m.predict(X_test[:, selected_idx]),
-            average='macro'
-        )
-
-        f1_scores.append(f1)
-
 
     # Plot
     standalone = ax is None
@@ -429,7 +429,7 @@ def plot_feature_ablation(
         range(1, len(imp_order) + 1),
         f1_scores,
         marker='o',
-        label="Test F1"
+        label='Test F1'
     )
 
     ax.axhline(
@@ -439,17 +439,22 @@ def plot_feature_ablation(
         label=f'Full F1 Macro: {f1_scores[-1]:.3f}'
     )
 
-    ax.set_xlabel('Number of Features ' )
-    ax.set_ylabel('Test F1 Macro-score' )
-    ax.set_title(f"{title_prefix}: Feature Ablation")
-    ax.set_ylim(0.50, 0.90)
+    ax.set_xlabel('Number of Features')
+    ax.set_ylabel('Test F1 Score Macro-score')
+    ax.set_title(
+        f"{title_prefix}: Feature Ablation"
+    )
+
+    ax.set_ylim(
+        min(f1_scores) - 0.02,
+        max(f1_scores) + 0.02
+    )
 
     ax.legend(loc="lower right")
-
+    ax.grid(True)
 
     if standalone:
         plt.tight_layout()
-        plt.grid(True)
         plt.show()
 
 
@@ -926,12 +931,12 @@ def plot_learning_curve(
     ax.set_ylabel('F1 Macro-score')
     ax.set_title(f"{title_prefix}: Learning Curve")
     ax.legend()
-    ax.grid(alpha=0.3)
+    ax.grid(True)
 
     if standalone:
         plt.tight_layout()
         plt.show()
-
+ 
 
 
 
