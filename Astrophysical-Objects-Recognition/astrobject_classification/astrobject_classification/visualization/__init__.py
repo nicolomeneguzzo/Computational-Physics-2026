@@ -445,10 +445,7 @@ def plot_feature_ablation(
         f"{title_prefix}: Feature Ablation"
     )
 
-    ax.set_ylim(
-        min(f1_scores) - 0.02,
-        max(f1_scores) + 0.02
-    )
+    ax.set_ylim(0.50, 0.90)
 
     ax.legend(loc="lower right")
     ax.grid(True)
